@@ -81,7 +81,7 @@ export function InstagramFeed() {
             href="https://instagram.com/eldesignadove"
             target="_blank"
             rel="noopener noreferrer"
-            className="group relative aspect-square bg-surface-container-lowest rounded-xl p-6 flex flex-col justify-between hover:bg-surface-container transition-colors"
+            className="group relative aspect-square bg-surface-container-lowest rounded-xl p-4 md:p-6 flex flex-col justify-between hover:bg-surface-container transition-colors"
           >
             <div className="flex items-center justify-between">
               <span className="font-label-caps text-label-caps text-outline uppercase">

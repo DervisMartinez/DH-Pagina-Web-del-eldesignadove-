@@ -51,10 +51,17 @@ export function Header() {
             href="https://instagram.com/eldesignadove"
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center justify-center px-4 py-2 bg-primary text-on-primary font-label-caps text-label-caps uppercase tracking-wider rounded-lg transition-colors hover:bg-secondary-fixed hover:text-on-secondary-fixed"
+            className="inline-flex items-center justify-center px-3 py-2 md:px-4 md:py-2 bg-primary text-on-primary font-label-caps text-[10px] md:text-label-caps uppercase tracking-wider rounded-lg transition-colors hover:bg-secondary-fixed hover:text-on-secondary-fixed"
           >
-            @eldesignadove
+            <span className="hidden sm:inline">@eldesignadove</span>
+            <span className="inline sm:hidden">Seguir</span>
           </a>
+          <button
+            aria-label="Menú"
+            className="lg:hidden w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary hover:bg-surface-container-high transition-colors"
+          >
+            <span className="material-symbols-outlined text-[20px]">menu</span>
+          </button>
         </div>
       </div>
     </header>

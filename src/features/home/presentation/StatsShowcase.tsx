@@ -72,7 +72,7 @@ export function StatsShowcase() {
                   <span className="material-symbols-outlined text-primary">{stat.icon}</span>
                 </div>
                 <div>
-                  <span className="font-stat-numeric text-display-lg text-primary block leading-none mb-1">
+                  <span className="font-stat-numeric text-[36px] md:text-display-lg text-primary block leading-none mb-1">
                     {stat.value}
                   </span>
                   <span className="font-body-sm text-body-sm text-secondary">
