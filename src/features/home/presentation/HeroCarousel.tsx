@@ -77,12 +77,12 @@ export function HeroCarousel() {
               />
               <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
               <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-transparent to-transparent" />
-              <div className="absolute inset-0 flex flex-col justify-end pt-20 p-6 md:p-14 max-w-3xl">
-                <div className="flex items-center gap-3 mb-4">
-                  <span className="px-3 py-1 bg-surface-container-highest/80 backdrop-blur-md rounded-full font-label-caps text-label-caps text-primary uppercase">
+              <div className="absolute inset-0 flex flex-col justify-end pt-20 p-6 pb-24 md:pb-14 md:p-14 max-w-3xl">
+                <div className="flex flex-col md:flex-row items-start md:items-center gap-2 md:gap-3 mb-4">
+                  <span className="px-3 py-1 bg-surface-container-highest/80 backdrop-blur-md rounded-full font-label-caps text-[10px] md:text-label-caps text-primary uppercase">
                     {slide.tag}
                   </span>
-                  <span className="font-body-sm text-body-sm text-secondary font-medium">
+                  <span className="font-body-sm text-[11px] md:text-body-sm text-secondary font-medium">
                     {slide.tech}
                   </span>
                 </div>
