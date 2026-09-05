@@ -16,31 +16,25 @@ export function Header() {
         </div>
         <nav className="hidden lg:flex items-center gap-2">
           <Link
-            href="#"
-            className="px-4 py-2 uppercase transition-colors bg-surface-container-highest text-primary font-bold rounded-lg"
+            href="/"
+            className="px-4 py-2 uppercase transition-colors hover:bg-surface-container-highest text-primary font-bold rounded-lg"
           >
             Inicio
           </Link>
           <Link
-            href="#coberturas-internacionales"
+            href="/#coberturas-internacionales"
             className="px-4 py-2 text-on-surface-variant font-label-caps text-label-caps uppercase transition-colors hover:text-primary"
           >
             Eventos
           </Link>
           <Link
-            href="#articulos"
+            href="/galeria"
             className="px-4 py-2 text-on-surface-variant font-label-caps text-label-caps uppercase transition-colors hover:text-primary"
           >
             Galería
           </Link>
           <Link
-            href="#articulos"
-            className="px-4 py-2 text-on-surface-variant font-label-caps text-label-caps uppercase transition-colors hover:text-primary"
-          >
-            Archivo Visual
-          </Link>
-          <Link
-            href="#manifiesto"
+            href="/#manifiesto"
             className="px-4 py-2 text-on-surface-variant font-label-caps text-label-caps uppercase transition-colors hover:text-primary"
           >
             Sobre Nosotros
