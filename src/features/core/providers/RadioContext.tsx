@@ -23,12 +23,40 @@ export function RadioProvider({ children }: { children: ReactNode }) {
 
   const STREAM_URL = 'https://stream.zeno.fm/5xp6jnfnmiouv';
 
+  useEffect(() => {
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: 'Radio El Designado',
+        artist: 'Señal Central 24/7',
+        album: 'Transmisión en Vivo',
+        artwork: [
+          { src: '/DH LOGO fondo blanco.jpeg', sizes: '96x96', type: 'image/jpeg' },
+          { src: '/DH LOGO fondo blanco.jpeg', sizes: '128x128', type: 'image/jpeg' },
+          { src: '/DH LOGO fondo blanco.jpeg', sizes: '192x192', type: 'image/jpeg' },
+          { src: '/DH LOGO fondo blanco.jpeg', sizes: '256x256', type: 'image/jpeg' },
+          { src: '/DH LOGO fondo blanco.jpeg', sizes: '384x384', type: 'image/jpeg' },
+          { src: '/DH LOGO fondo blanco.jpeg', sizes: '512x512', type: 'image/jpeg' },
+        ]
+      });
+
+      navigator.mediaSession.setActionHandler('play', () => {
+        togglePlay();
+      });
+      navigator.mediaSession.setActionHandler('pause', () => {
+        togglePlay();
+      });
+    }
+  }, [isPlaying]);
+
   const togglePlay = () => {
     if (!audioRef.current) return;
 
     if (isPlaying) {
       audioRef.current.pause();
       setIsPlaying(false);
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = 'paused';
+      }
     } else {
       setIsBuffering(true);
       audioRef.current.src = STREAM_URL;
@@ -38,11 +66,17 @@ export function RadioProvider({ children }: { children: ReactNode }) {
         .then(() => {
           setIsPlaying(true);
           setIsBuffering(false);
+          if ('mediaSession' in navigator) {
+            navigator.mediaSession.playbackState = 'playing';
+          }
         })
         .catch((error) => {
           console.error('Error playing audio:', error);
           setIsBuffering(false);
           setIsPlaying(false);
+          if ('mediaSession' in navigator) {
+            navigator.mediaSession.playbackState = 'none';
+          }
         });
     }
   };
