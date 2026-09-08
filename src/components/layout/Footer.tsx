@@ -17,8 +17,7 @@ export function Footer() {
               />
             </div>
             <p className="font-body-sm text-body-sm text-on-surface-variant">
-              Santuario fotográfico de la cultura beisbolera. Curaduría visual de autor, capturas en
-              alta fidelidad y archivo patrimonial de la LVBP y Grandes Ligas.
+              Medio digital que brinda cobertura de las ligas y eventos más importantes para el fanático venezolano: LVBP, Grandes Ligas (MLB), Clásico Mundial (WBC) y Serie del Caribe.
             </p>
             <div className="pt-2">
               <a
@@ -31,23 +30,23 @@ export function Footer() {
           </div>
           <div className="md:col-span-4 space-y-3">
             <span className="font-label-caps text-label-caps uppercase text-on-surface-variant tracking-widest block">
-              Archivo Visual
+              Secciones
             </span>
             <ul className="space-y-2 font-body-sm text-body-sm text-secondary">
               <li className="hover:text-primary transition-colors">
-                <Link href="#">Series • LVBP en Color</Link>
+                <Link href="/lvbp">Resultados y Posiciones LVBP</Link>
               </li>
               <li className="hover:text-primary transition-colors">
-                <Link href="#">Series • Grandes Ligas de Noche</Link>
+                <Link href="/#coberturas-internacionales">Cobertura de MLB</Link>
               </li>
               <li className="hover:text-primary transition-colors">
-                <Link href="#">Bodegón & Texturas de Dugout</Link>
+                <Link href="/#coberturas-internacionales">Serie del Caribe</Link>
               </li>
               <li className="hover:text-primary transition-colors">
-                <Link href="#">Acción Rápida en el Diamante</Link>
+                <Link href="/sobre-nosotros">Sobre Nosotros</Link>
               </li>
               <li className="hover:text-primary transition-colors">
-                <Link href="#">Archivo Histórico en 35mm</Link>
+                <Link href="/contacto">Contacto</Link>
               </li>
             </ul>
           </div>

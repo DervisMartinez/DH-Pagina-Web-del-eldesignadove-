@@ -22,9 +22,32 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL('https://eldesignadove.vercel.app'),
   title: 'El Designado | Medio Digital Deportivo',
   description: 'Medio digital que brinda cobertura de las ligas y eventos más importantes para el fanático venezolano: LVBP, Grandes Ligas (MLB), Clásico Mundial (WBC) y Serie del Caribe.',
   keywords: ['Béisbol', 'LVBP', 'MLB', 'Grandes Ligas', 'Serie del Caribe', 'Noticias de Béisbol', 'El Designado', 'Deportes', 'Venezuela'],
+  openGraph: {
+    title: 'El Designado | Medio Digital Deportivo',
+    description: 'Medio digital que brinda cobertura de las ligas y eventos más importantes para el fanático venezolano: LVBP, Grandes Ligas (MLB), Clásico Mundial (WBC) y Serie del Caribe.',
+    url: 'https://eldesignadove.vercel.app',
+    siteName: 'El Designado',
+    images: [
+      {
+        url: '/icon.png',
+        width: 800,
+        height: 800,
+        alt: 'El Designado Logo',
+      },
+    ],
+    locale: 'es_VE',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'El Designado | Medio Digital Deportivo',
+    description: 'Medio digital que brinda cobertura de las ligas y eventos más importantes para el fanático venezolano.',
+    images: ['/icon.png'],
+  },
 };
 
 import { Header } from '@/components/layout/Header';
