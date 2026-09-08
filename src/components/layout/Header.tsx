@@ -39,6 +39,16 @@ export function Header() {
               Inicio
             </Link>
             <Link
+              href="/lvbp"
+              className={`px-4 py-2 font-label-caps text-[11px] uppercase transition-colors rounded-lg ${
+                pathname === '/lvbp'
+                  ? 'bg-surface-container-highest text-primary font-bold'
+                  : 'text-on-surface-variant hover:text-primary hover:bg-surface-container-low'
+              }`}
+            >
+              LVBP
+            </Link>
+            <Link
               href="/#coberturas-internacionales"
               className="px-4 py-2 text-on-surface-variant font-label-caps text-label-caps uppercase transition-colors hover:text-primary"
             >
@@ -105,6 +115,17 @@ export function Header() {
             }`}
           >
             Inicio
+          </Link>
+          <Link
+            href="/lvbp"
+            onClick={closeMenu}
+            className={`p-4 text-center font-label-caps text-label-caps uppercase rounded-xl ${
+              pathname === '/lvbp'
+                ? 'bg-surface-container-highest text-primary'
+                : 'text-on-surface hover:bg-surface-container'
+            }`}
+          >
+            LVBP
           </Link>
           <Link
             href="/#coberturas-internacionales"

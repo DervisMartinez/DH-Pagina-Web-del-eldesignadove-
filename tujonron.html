@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="es">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="csrf-token" content="WdKr3vKrBAxsPkksnwwlyOFnRC4WOJ3PCSHiifBt">
+
+        <title>Juegos en Vivo LVBP | Estadísticas LVBP | Tujonrón.com</title>
+
+        <!-- Meta tags personalizados -->
+                <meta name="description" content="Juegos en vivo de la LVBP. Marcadores, boxscores, estadísticas, reportes y APIs profesionales del béisbol venezolano y caribeño. Tujonrón.com — Somos todo el béisbol.">
+    
+        <!-- Fonts -->
+        <link rel="preconnect" href="https://fonts.bunny.net">
+        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+
+        <!-- Favicon -->
+        <link rel="icon" type="image/png" href="/favicon-96x96.png" sizes="96x96" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <link rel="shortcut icon" href="/favicon.ico" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        <meta name="apple-mobile-web-app-title" content="TuJonrón" />
+        <link rel="manifest" href="/site.webmanifest" />
+
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-81C80VW46J"></script>
+        <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+
+        gtag('config', 'G-81C80VW46J');
+        </script>
+
+        <!-- Google AdSense -->
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3926348795626891" crossorigin="anonymous"></script>
+
+        <!-- Scripts -->
+        <link rel="preload" as="style" href="https://tujonron.com/build/assets/app--xraNhzh.css" /><link rel="modulepreload" as="script" href="https://tujonron.com/build/assets/app-Bj43h_rG.js" /><link rel="stylesheet" href="https://tujonron.com/build/assets/app--xraNhzh.css" data-navigate-track="reload" /><script type="module" src="https://tujonron.com/build/assets/app-Bj43h_rG.js" data-navigate-track="reload"></script>    <!-- Livewire Styles --><style >[wire\:loading][wire\:loading], [wire\:loading\.delay][wire\:loading\.delay], [wire\:loading\.inline-block][wire\:loading\.inline-block], [wire\:loading\.inline][wire\:loading\.inline], [wire\:loading\.block][wire\:loading\.block], [wire\:loading\.flex][wire\:loading\.flex], [wire\:loading\.table][wire\:loading\.table], [wire\:loading\.grid][wire\:loading\.grid], [wire\:loading\.inline-flex][wire\:loading\.inline-flex] {display: none;}[wire\:loading\.delay\.none][wire\:loading\.delay\.none], [wire\:loading\.delay\.shortest][wire\:loading\.delay\.shortest], [wire\:loading\.delay\.shorter][wire\:loading\.delay\.shorter], [wire\:loading\.delay\.short][wire\:loading\.delay\.short], [wire\:loading\.delay\.default][wire\:loading\.delay\.default], [wire\:loading\.delay\.long][wire\:loading\.delay\.long], [wire\:loading\.delay\.longer][wire\:loading\.delay\.longer], [wire\:loading\.delay\.longest][wire\:loading\.delay\.longest] {display: none;}[wire\:offline][wire\:offline] {display: none;}[wire\:dirty]:not(textarea):not(input):not(select) {display: none;}:root {--livewire-progress-bar-color: #2299dd;}[x-cloak] {display: none !important;}[wire\:cloak] {display: none !important;}</style>
+</head>
+    <body class="font-sans antialiased">
+        <div class="flex flex-col min-h-screen bg-slate-100">
+            <nav x-data="{ open: false }" class="bg-slate-950 shadow rounded-lg m-1 sm:m-2">
+    <!-- Primary Navigation Menu -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+            <div class="flex">
+                <!-- Logo -->
+                <div class="shrink-0 flex items-center">
+                    <a href="https://tujonron.com">
+                        <img alt="TuJonrón.com" src="/images/logo_alt_bw.png"  class="h-8 w-auto">                    </a>
+                </div>
+
+                <!-- Navigation Links -->
+                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
+                    <a class="inline-flex items-center px-1 pt-1 border-b-2 border-[var(--color-red)] text-sm font-medium leading-5 text-slate-100 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-red)] focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 transition-colors duration-200" href="https://tujonron.com">
+    Home
+</a>                    <a class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-slate-300 cursor-pointer hover:text-slate-100 hover:border-[var(--color-red)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-red)] focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 transition-colors duration-200" href="https://tujonron.com/posiciones">
+    Posiciones
+</a>                    <a class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-slate-300 cursor-pointer hover:text-slate-100 hover:border-[var(--color-red)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-red)] focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 transition-colors duration-200" href="https://tujonron.com/resultados">
+    Resultados
+</a>                    <a class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-slate-300 cursor-pointer hover:text-slate-100 hover:border-[var(--color-red)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-red)] focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 transition-colors duration-200" href="https://tujonron.com/calendario">
+    Calendario
+</a>                    <a class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-slate-300 cursor-pointer hover:text-slate-100 hover:border-[var(--color-red)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-red)] focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 transition-colors duration-200" href="https://tujonron.com/roster">
+    Rosters
+</a>                    <a class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-slate-300 cursor-pointer hover:text-slate-100 hover:border-[var(--color-red)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-red)] focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 transition-colors duration-200" href="https://tujonron.com/estadisticas">
+    Estadísticas
+</a>                    <a class="inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-slate-300 cursor-pointer hover:text-slate-100 hover:border-[var(--color-red)] focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-red)] focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 transition-colors duration-200" href="https://tujonron.com/estadios">
+    Estadios
+</a>                    <a href="https://x.com/TuJonron" target="_blank" rel="noopener noreferrer" class="inline-flex items-center px-1 pt-1 text-sm font-medium text-slate-400 hover:text-white transition-colors duration-200" title="Síguenos en X">
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Settings Dropdown / Auth Links -->
+            <div class="hidden sm:flex sm:items-center sm:ms-6">
+                                    <div class="flex items-center space-x-4">
+                                                                    </div>
+                            </div>
+
+            <!-- Hamburger -->
+            <div class="-me-2 flex items-center sm:hidden">
+                <button @click="open = ! open" 
+                        class="inline-flex items-center justify-center p-2 rounded-md text-slate-400 hover:text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500 focus:ring-offset-2 focus:ring-offset-slate-950 transition-colors duration-200"
+                        aria-label="Toggle navigation menu">
+                    <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                        <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Responsive Navigation Menu -->
+    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden bg-slate-950">
+        <div class="pt-2 pb-3 space-y-1">
+            <a class="block w-full ps-3 pe-4 py-3 border-l-4 border-[var(--color-red)] text-start text-base font-medium text-white bg-slate-800 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-red)] focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:text-white focus-visible:bg-slate-700 focus-visible:border-[var(--color-red-dark)] transition-colors duration-200" href="https://tujonron.com">
+    Home
+</a>
+            <a class="block w-full ps-3 pe-4 py-3 border-l-4 border-transparent text-start text-base font-medium text-slate-300 cursor-pointer hover:text-white hover:bg-slate-800 hover:border-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-red)] focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:text-white focus-visible:bg-slate-800 focus-visible:border-slate-600 transition-colors duration-200" href="https://tujonron.com/posiciones">
+    Posiciones
+</a>
+            <a class="block w-full ps-3 pe-4 py-3 border-l-4 border-transparent text-start text-base font-medium text-slate-300 cursor-pointer hover:text-white hover:bg-slate-800 hover:border-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-red)] focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:text-white focus-visible:bg-slate-800 focus-visible:border-slate-600 transition-colors duration-200" href="https://tujonron.com/resultados">
+    Resultados
+</a>
+            <a class="block w-full ps-3 pe-4 py-3 border-l-4 border-transparent text-start text-base font-medium text-slate-300 cursor-pointer hover:text-white hover:bg-slate-800 hover:border-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-red)] focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:text-white focus-visible:bg-slate-800 focus-visible:border-slate-600 transition-colors duration-200" href="https://tujonron.com/calendario">
+    Calendario
+</a>
+            <a class="block w-full ps-3 pe-4 py-3 border-l-4 border-transparent text-start text-base font-medium text-slate-300 cursor-pointer hover:text-white hover:bg-slate-800 hover:border-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-red)] focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:text-white focus-visible:bg-slate-800 focus-visible:border-slate-600 transition-colors duration-200" href="https://tujonron.com/roster">
+    Rosters
+</a>
+            <a class="block w-full ps-3 pe-4 py-3 border-l-4 border-transparent text-start text-base font-medium text-slate-300 cursor-pointer hover:text-white hover:bg-slate-800 hover:border-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-red)] focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:text-white focus-visible:bg-slate-800 focus-visible:border-slate-600 transition-colors duration-200" href="https://tujonron.com/estadisticas">
+    Estadísticas
+</a>
+            <a class="block w-full ps-3 pe-4 py-3 border-l-4 border-transparent text-start text-base font-medium text-slate-300 cursor-pointer hover:text-white hover:bg-slate-800 hover:border-slate-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-red)] focus-visible:ring-offset-2 focus-visible:ring-offset-slate-950 focus-visible:text-white focus-visible:bg-slate-800 focus-visible:border-slate-600 transition-colors duration-200" href="https://tujonron.com/estadios">
+    Estadios
+</a>
+            <a href="https://x.com/TuJonron" target="_blank" rel="noopener noreferrer" class="flex items-center ps-3 pe-4 py-2 border-l-4 border-transparent text-base font-medium text-slate-400 hover:text-white hover:bg-slate-800 hover:border-slate-500 transition-colors duration-200">
+                <svg class="w-5 h-5 me-2" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+                </svg>
+                @TuJonron
+            </a>
+        </div>
+
+                    <!-- Guest Options -->
+            <div class="pt-4 pb-1 border-t border-slate-700">
+                <div class="mt-3 space-y-1">
+                                                        </div>
+            </div>
+            </div>
+</nav>
+
+            <!-- Page Heading -->
+            
+            <!-- Page Content -->
+            <main class="flex-grow">
+                <div class="py-3">
+        <div class="max-w-7xl mx-auto sm:px-3 lg:px-4">
+            <div class="grid grid-cols-3 gap-4">
+
+                <!-- Scoreboard -->
+                <div class="col-span-3 mb-2 text-gray-900">
+                    <div wire:snapshot="{&quot;data&quot;:{&quot;scoreboards&quot;:[[],{&quot;s&quot;:&quot;arr&quot;}],&quot;loading&quot;:true,&quot;error&quot;:false,&quot;storageUrl&quot;:&quot;https:\/\/api.tujonron.net\/storage\/tjrn-web-cst7Yj2kEUim4CYs\/&quot;,&quot;apiUrl&quot;:&quot;https:\/\/api.tujonron.net\/api\/v1\/&quot;,&quot;date&quot;:null,&quot;season_id&quot;:&quot;2025&quot;,&quot;loadDate&quot;:null,&quot;canGoPrevious&quot;:true,&quot;canGoNext&quot;:true,&quot;maxDaysBack&quot;:2,&quot;maxDaysForward&quot;:2,&quot;shouldPoll&quot;:false,&quot;apiKey&quot;:&quot;NGKK5DfFQsjCNu2btaUIsgbWLZ3kCwD3&quot;,&quot;apiSecret&quot;:&quot;wYkF0O6By5PXE1o6GJMvSYHwrDaLKW9ClAR6hg1av8o2Vq66eYhkBJNDvX6z8oh3&quot;,&quot;withOptions&quot;:[{&quot;connect_timeout&quot;:240,&quot;read_timeout&quot;:240,&quot;timeout&quot;:240},{&quot;s&quot;:&quot;arr&quot;}],&quot;apiToken&quot;:null},&quot;memo&quot;:{&quot;id&quot;:&quot;YIizKxiTauFopiNEzTY6&quot;,&quot;name&quot;:&quot;home.scoreboards&quot;,&quot;path&quot;:&quot;\/&quot;,&quot;method&quot;:&quot;GET&quot;,&quot;children&quot;:[],&quot;scripts&quot;:[],&quot;assets&quot;:[],&quot;errors&quot;:[],&quot;locale&quot;:&quot;es&quot;},&quot;checksum&quot;:&quot;8b81e4b065b344e622d71fcc6e5fe00edeb7abef50885e65f9bba97b41b9928b&quot;}" wire:effects="[]" wire:id="YIizKxiTauFopiNEzTY6" class="col-span-3 mb-2 text-gray-900">
+    <div 
+        class="h-[100px] flex justify-between" 
+        wire:init="loadScoreboard"
+                x-data="scrollController()"
+    >
+        <div class="flex flex-col items-center justify-center w-16 border-r border-gray-400">
+                            <div class="text-lg font-bold">--</div>
+                <div class="text-sm font-bold">---</div>
+                    </div>
+        <div 
+            class="w-full flex overflow-x-scroll items-center no-scrollbar scroll-smooth"
+            :class="{ 'snap-x snap-mandatory': isMobile }"
+            x-ref="scrollContainer"
+            @scroll.passive="isMobile && updateScrollButtons()"
+        >
+                            
+                <div class="flex space-x-2 animate-pulse">
+        <div class="h-[100px] w-[144px] min-w-[144px] bg-slate-200 rounded-lg mx-2">
+        <div class="p-2 space-y-2">
+            <!-- Time/Status area -->
+            <div class="h-3 bg-slate-300 rounded w-16"></div>
+            
+            <!-- Away team row -->
+            <div class="flex justify-between items-center">
+                <div class="h-4 bg-slate-300 rounded w-8"></div>
+                <div class="h-4 bg-slate-300 rounded w-4"></div>
+            </div>
+            
+            <!-- Home team row -->
+            <div class="flex justify-between items-center">
+                <div class="h-4 bg-slate-300 rounded w-8"></div>
+                <div class="h-4 bg-slate-300 rounded w-4"></div>
+            </div>
+            
+            <!-- Venue/Status area -->
+            <div class="flex justify-center">
+                <div class="h-3 bg-slate-300 rounded w-12"></div>
+            </div>
+        </div>
+    </div>
+        <div class="h-[100px] w-[144px] min-w-[144px] bg-slate-200 rounded-lg mx-2">
+        <div class="p-2 space-y-2">
+            <!-- Time/Status area -->
+            <div class="h-3 bg-slate-300 rounded w-16"></div>
+            
+            <!-- Away team row -->
+            <div class="flex justify-between items-center">
+                <div class="h-4 bg-slate-300 rounded w-8"></div>
+                <div class="h-4 bg-slate-300 rounded w-4"></div>
+            </div>
+            
+            <!-- Home team row -->
+            <div class="flex justify-between items-center">
+                <div class="h-4 bg-slate-300 rounded w-8"></div>
+                <div class="h-4 bg-slate-300 rounded w-4"></div>
+            </div>
+            
+            <!-- Venue/Status area -->
+            <div class="flex justify-center">
+                <div class="h-3 bg-slate-300 rounded w-12"></div>
+            </div>
+        </div>
+    </div>
+        <div class="h-[100px] w-[144px] min-w-[144px] bg-slate-200 rounded-lg mx-2">
+        <div class="p-2 space-y-2">
+            <!-- Time/Status area -->
+            <div class="h-3 bg-slate-300 rounded w-16"></div>
+            
+            <!-- Away team row -->
+            <div class="flex justify-between items-center">
+                <div class="h-4 bg-slate-300 rounded w-8"></div>
+                <div class="h-4 bg-slate-300 rounded w-4"></div>
+            </div>
+            
+            <!-- Home team row -->
+            <div class="flex justify-between items-center">
+                <div class="h-4 bg-slate-300 rounded w-8"></div>
+                <div class="h-4 bg-slate-300 rounded w-4"></div>
+            </div>
+            
+            <!-- Venue/Status area -->
+            <div class="flex justify-center">
+                <div class="h-3 bg-slate-300 rounded w-12"></div>
+            </div>
+        </div>
+    </div>
+        <div class="h-[100px] w-[144px] min-w-[144px] bg-slate-200 rounded-lg mx-2">
+        <div class="p-2 space-y-2">
+            <!-- Time/Status area -->
+            <div class="h-3 bg-slate-300 rounded w-16"></div>
+            
+            <!-- Away team row -->
+            <div class="flex justify-between items-center">
+                <div class="h-4 bg-slate-300 rounded w-8"></div>
+                <div class="h-4 bg-slate-300 rounded w-4"></div>
+            </div>
+            
+            <!-- Home team row -->
+            <div class="flex justify-between items-center">
+                <div class="h-4 bg-slate-300 rounded w-8"></div>
+                <div class="h-4 bg-slate-300 rounded w-4"></div>
+            </div>
+            
+            <!-- Venue/Status area -->
+            <div class="flex justify-center">
+                <div class="h-3 bg-slate-300 rounded w-12"></div>
+            </div>
+        </div>
+    </div>
+    </div>                    </div>
+        <div class="flex flex-col items-center justify-center w-16 border-l border-gray-400">
+            <button 
+                @click="scrollLeft()"
+                type="button" 
+                :class="{
+                    'bg-slate-500 hover:bg-slate-600 text-white cursor-pointer': isMobile ? canScrollLeft : true,
+                    'bg-slate-300 text-slate-400 cursor-not-allowed': isMobile ? !canScrollLeft : false
+                }"
+                class="flex justify-center items-center select-none border text-xl font-bold p-2 m-2 rounded-full shadow h-8 w-8 focus:outline-none focus:shadow-outline transition-colors duration-200"
+                :title="isMobile ? (canScrollLeft ? 'Scroll izquierda' : 'No hay más contenido') : 'Día anterior'"
+                :disabled="isMobile ? !canScrollLeft : false"
+                wire:loading.attr="disabled"
+                wire:loading.class="!bg-slate-400 !cursor-wait"
+                wire:target="previousDay"
+            >
+                <!-- Spinner durante carga -->
+                <svg wire:loading wire:target="previousDay" class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <!-- Icono normal -->
+                <svg wire:loading.remove wire:target="previousDay" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5"></path>
+                </svg>
+            </button>
+            <button 
+                @click="scrollRight()"
+                type="button" 
+                :class="{
+                    'bg-slate-500 hover:bg-slate-600 text-white cursor-pointer': isMobile ? canScrollRight : true,
+                    'bg-slate-300 text-slate-400 cursor-not-allowed': isMobile ? !canScrollRight : false
+                }"
+                class="flex justify-center items-center select-none border text-xl font-bold p-2 m-2 rounded-full shadow h-8 w-8 focus:outline-none focus:shadow-outline transition-colors duration-200"
+                :title="isMobile ? (canScrollRight ? 'Scroll derecha' : 'No hay más contenido') : 'Día siguiente'"
+                :disabled="isMobile ? !canScrollRight : false"
+                wire:loading.attr="disabled"
+                wire:loading.class="!bg-slate-400 !cursor-wait"
+                wire:target="nextDay"
+            >
+                <!-- Spinner durante carga -->
+                <svg wire:loading wire:target="nextDay" class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="m4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <!-- Icono normal -->
+                <svg wire:loading.remove wire:target="nextDay" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5"></path>
+                </svg>
+            </button>
+        </div>
+    </div>
+</div>
+<script>
+function scrollController() {
+    return {
+        isMobile: false,
+        canScrollLeft: false,
+        canScrollRight: false,
+        
+        init() {
+            this.checkIfMobile();
+            window.addEventListener('resize', () => this.checkIfMobile());
+            if (this.isMobile) {
+                this.$nextTick(() => this.updateScrollButtons());
+            }
+        },
+        
+        checkIfMobile() {
+            this.isMobile = window.innerWidth < 768;
+        },
+        
+        scrollLeft() {
+            if (this.isMobile) {
+                const container = this.$refs.scrollContainer;
+                if (container) {
+                    container.scrollBy({ left: -300, behavior: 'smooth' });
+                    setTimeout(() => this.updateScrollButtons(), 300);
+                }
+            } else {
+                this.$wire.previousDay();
+            }
+        },
+        
+        scrollRight() {
+            if (this.isMobile) {
+                const container = this.$refs.scrollContainer;
+                if (container) {
+                    container.scrollBy({ left: 300, behavior: 'smooth' });
+                    setTimeout(() => this.updateScrollButtons(), 300);
+                }
+            } else {
+                this.$wire.nextDay();
+            }
+        },
+        
+        updateScrollButtons() {
+            const container = this.$refs.scrollContainer;
+            if (container) {
+                this.canScrollLeft = container.scrollLeft > 0;
+                this.canScrollRight = container.scrollLeft < (container.scrollWidth - container.clientWidth);
+            }
+        }
+    }
+}
+</script>
+                </div>                
+
+                <!-- Standings -->
+                <div class="col-span-3 sm:col-span-1 py-4 px-4 bg-white text-gray-900 overflow-hidden shadow-sm sm:rounded-lg">
+                    <div wire:snapshot="{&quot;data&quot;:{&quot;standings&quot;:[[],{&quot;s&quot;:&quot;arr&quot;}],&quot;loading&quot;:true,&quot;error&quot;:false,&quot;lastUpdated&quot;:null,&quot;storageUrl&quot;:&quot;https:\/\/api.tujonron.net\/storage\/tjrn-web-cst7Yj2kEUim4CYs\/&quot;,&quot;activeTab&quot;:&quot;R&quot;,&quot;gameTypes&quot;:[{&quot;R&quot;:&quot;Regular&quot;,&quot;D&quot;:&quot;Comod\u00edn&quot;,&quot;L&quot;:&quot;Round Robin&quot;,&quot;W&quot;:&quot;Final&quot;},{&quot;s&quot;:&quot;arr&quot;}]},&quot;memo&quot;:{&quot;id&quot;:&quot;WW9AC3FKW01z0qIVdbRK&quot;,&quot;name&quot;:&quot;home.standings&quot;,&quot;path&quot;:&quot;\/&quot;,&quot;method&quot;:&quot;GET&quot;,&quot;children&quot;:[],&quot;scripts&quot;:[],&quot;assets&quot;:[],&quot;errors&quot;:[],&quot;locale&quot;:&quot;es&quot;},&quot;checksum&quot;:&quot;debebba6dee4334a201c02375fc86612a42bdd0097f27bd2c50ca916616bde7d&quot;}" wire:effects="[]" wire:id="WW9AC3FKW01z0qIVdbRK" wire:poll.900s="loadStandings" wire:init="loadStandings"> 
+    <h2 class="text-lg font-semibold mb-4">Posiciones</h2>
+    
+            
+        <section class="my-4 space-y-4">
+    <!-- Primera fila -->
+    <div class="flex gap-3 animate-pulse">
+        <div class="h-10 bg-slate-200 rounded flex-1"></div>
+    </div>
+
+    <!-- Segunda parte: bloques verticales -->
+    <div class="animate-pulse space-y-6">
+                <div class="h-5 bg-slate-200 rounded w-full"></div>
+                <div class="h-5 bg-slate-200 rounded w-full"></div>
+                <div class="h-5 bg-slate-200 rounded w-full"></div>
+                <div class="h-5 bg-slate-200 rounded w-full"></div>
+                <div class="h-5 bg-slate-200 rounded w-full"></div>
+                <div class="h-5 bg-slate-200 rounded w-full"></div>
+                <div class="h-5 bg-slate-200 rounded w-full"></div>
+                <div class="h-5 bg-slate-200 rounded w-full"></div>
+           
+    </div>     
+</section>    </div>
+                </div>
+
+                <!-- Líderes de Bateo -->
+                <div class="col-span-3 sm:col-span-1 py-4 px-4 bg-white text-gray-900 overflow-hidden shadow-sm sm:rounded-lg">
+                    <div wire:snapshot="{&quot;data&quot;:{&quot;hittingLeaders&quot;:[[],{&quot;s&quot;:&quot;arr&quot;}],&quot;loading&quot;:true,&quot;error&quot;:false,&quot;lastUpdated&quot;:null,&quot;storageUrl&quot;:&quot;https:\/\/api.tujonron.net\/storage\/tjrn-web-cst7Yj2kEUim4CYs\/&quot;,&quot;activeHittingTab&quot;:&quot;AVG&quot;,&quot;hittingCategories&quot;:[{&quot;AVG&quot;:&quot;AVG&quot;,&quot;R&quot;:&quot;R&quot;,&quot;HR&quot;:&quot;HR&quot;,&quot;CI&quot;:&quot;CI&quot;,&quot;BR&quot;:&quot;BR&quot;},{&quot;s&quot;:&quot;arr&quot;}]},&quot;memo&quot;:{&quot;id&quot;:&quot;kJVRABPEqkFw1nPYrN1Y&quot;,&quot;name&quot;:&quot;home.hitting-leaders&quot;,&quot;path&quot;:&quot;\/&quot;,&quot;method&quot;:&quot;GET&quot;,&quot;children&quot;:[],&quot;scripts&quot;:[],&quot;assets&quot;:[],&quot;errors&quot;:[],&quot;locale&quot;:&quot;es&quot;},&quot;checksum&quot;:&quot;65938c54cc3241df4153cb7ab56d939fc199709d0af79b86c02b62cd5d87561b&quot;}" wire:effects="[]" wire:id="kJVRABPEqkFw1nPYrN1Y" wire:poll.900s="loadHittingLeaders" wire:init="loadHittingLeaders">
+    <h2 class="text-lg font-semibold mb-4">Líderes de Bateo</h2>
+    
+            
+        <section class="my-4 space-y-2">
+    <!-- Primera fila -->
+    <div class="flex gap-2 animate-pulse">
+        <div class="h-10 bg-slate-200 rounded flex-1"></div>
+    </div>
+    <!-- Líder principal -->
+    <div class="flex flex-col items-center space-y-2">
+        <!-- Líder principal -->
+        <div class="animate-pulse flex flex-col items-center space-y-2">
+            <div class="w-24 h-24 bg-slate-200 rounded-full"></div> <!-- foto circular -->
+            <div class="h-4 bg-slate-200 rounded w-1/2"></div> <!-- nombre -->
+            <div class="h-4 bg-slate-200 rounded w-1/3"></div> <!-- estadística -->
+        </div>
+
+        <!-- Líderes secundarios -->
+        <div class="w-full space-y-2">
+                            <div class="animate-pulse flex items-center space-x-3">
+                    <div class="w-12 h-12 bg-slate-200 rounded-full"></div> <!-- foto pequeña -->
+                    <div class="flex-1 space-y-1">
+                        <div class="h-4 bg-slate-200 rounded w-3/4"></div> <!-- nombre -->
+                        <div class="h-3 bg-slate-200 rounded w-1/2"></div> <!-- estadística -->
+                    </div>
+                </div>
+                            <div class="animate-pulse flex items-center space-x-3">
+                    <div class="w-12 h-12 bg-slate-200 rounded-full"></div> <!-- foto pequeña -->
+                    <div class="flex-1 space-y-1">
+                        <div class="h-4 bg-slate-200 rounded w-3/4"></div> <!-- nombre -->
+                        <div class="h-3 bg-slate-200 rounded w-1/2"></div> <!-- estadística -->
+                    </div>
+                </div>
+                            <div class="animate-pulse flex items-center space-x-3">
+                    <div class="w-12 h-12 bg-slate-200 rounded-full"></div> <!-- foto pequeña -->
+                    <div class="flex-1 space-y-1">
+                        <div class="h-4 bg-slate-200 rounded w-3/4"></div> <!-- nombre -->
+                        <div class="h-3 bg-slate-200 rounded w-1/2"></div> <!-- estadística -->
+                    </div>
+                </div>
+                            <div class="animate-pulse flex items-center space-x-3">
+                    <div class="w-12 h-12 bg-slate-200 rounded-full"></div> <!-- foto pequeña -->
+                    <div class="flex-1 space-y-1">
+                        <div class="h-4 bg-slate-200 rounded w-3/4"></div> <!-- nombre -->
+                        <div class="h-3 bg-slate-200 rounded w-1/2"></div> <!-- estadística -->
+                    </div>
+                </div>
+                    </div>
+</div>
+</section>    </div>
+                </div>
+
+                <!-- Líderes de Pitcheo -->
+                <div class="col-span-3 sm:col-span-1 py-4 px-4 bg-white text-gray-900 overflow-hidden shadow-sm sm:rounded-lg">
+                    <div wire:snapshot="{&quot;data&quot;:{&quot;pitchingLeaders&quot;:[[],{&quot;s&quot;:&quot;arr&quot;}],&quot;loading&quot;:true,&quot;error&quot;:false,&quot;lastUpdated&quot;:null,&quot;storageUrl&quot;:&quot;https:\/\/api.tujonron.net\/storage\/tjrn-web-cst7Yj2kEUim4CYs\/&quot;,&quot;activePitchingTab&quot;:&quot;W&quot;,&quot;pitchingCategories&quot;:[{&quot;W&quot;:&quot;W&quot;,&quot;SV&quot;:&quot;SV&quot;,&quot;ERA&quot;:&quot;ERA&quot;,&quot;SO&quot;:&quot;SO&quot;,&quot;WHIP&quot;:&quot;WHIP&quot;},{&quot;s&quot;:&quot;arr&quot;}]},&quot;memo&quot;:{&quot;id&quot;:&quot;oZ6WRcyB7kjKSSd8spaZ&quot;,&quot;name&quot;:&quot;home.pitching-leaders&quot;,&quot;path&quot;:&quot;\/&quot;,&quot;method&quot;:&quot;GET&quot;,&quot;children&quot;:[],&quot;scripts&quot;:[],&quot;assets&quot;:[],&quot;errors&quot;:[],&quot;locale&quot;:&quot;es&quot;},&quot;checksum&quot;:&quot;e6d494f31d99f47f695647e844c4c96a49afcc1ee0dec524223b469af331e73b&quot;}" wire:effects="[]" wire:id="oZ6WRcyB7kjKSSd8spaZ" wire:poll.900s="loadPitchingLeaders" wire:init="loadPitchingLeaders">
+    <h2 class="text-lg font-semibold mb-4">Líderes de Pitcheo</h2>
+    
+            
+        <section class="my-4 space-y-2">
+    <!-- Primera fila -->
+    <div class="flex gap-2 animate-pulse">
+        <div class="h-10 bg-slate-200 rounded flex-1"></div>
+    </div>
+    <!-- Líder principal -->
+    <div class="flex flex-col items-center space-y-2">
+        <!-- Líder principal -->
+        <div class="animate-pulse flex flex-col items-center space-y-2">
+            <div class="w-24 h-24 bg-slate-200 rounded-full"></div> <!-- foto circular -->
+            <div class="h-4 bg-slate-200 rounded w-1/2"></div> <!-- nombre -->
+            <div class="h-4 bg-slate-200 rounded w-1/3"></div> <!-- estadística -->
+        </div>
+
+        <!-- Líderes secundarios -->
+        <div class="w-full space-y-2">
+                            <div class="animate-pulse flex items-center space-x-3">
+                    <div class="w-12 h-12 bg-slate-200 rounded-full"></div> <!-- foto pequeña -->
+                    <div class="flex-1 space-y-1">
+                        <div class="h-4 bg-slate-200 rounded w-3/4"></div> <!-- nombre -->
+                        <div class="h-3 bg-slate-200 rounded w-1/2"></div> <!-- estadística -->
+                    </div>
+                </div>
+                            <div class="animate-pulse flex items-center space-x-3">
+                    <div class="w-12 h-12 bg-slate-200 rounded-full"></div> <!-- foto pequeña -->
+                    <div class="flex-1 space-y-1">
+                        <div class="h-4 bg-slate-200 rounded w-3/4"></div> <!-- nombre -->
+                        <div class="h-3 bg-slate-200 rounded w-1/2"></div> <!-- estadística -->
+                    </div>
+                </div>
+                            <div class="animate-pulse flex items-center space-x-3">
+                    <div class="w-12 h-12 bg-slate-200 rounded-full"></div> <!-- foto pequeña -->
+                    <div class="flex-1 space-y-1">
+                        <div class="h-4 bg-slate-200 rounded w-3/4"></div> <!-- nombre -->
+                        <div class="h-3 bg-slate-200 rounded w-1/2"></div> <!-- estadística -->
+                    </div>
+                </div>
+                            <div class="animate-pulse flex items-center space-x-3">
+                    <div class="w-12 h-12 bg-slate-200 rounded-full"></div> <!-- foto pequeña -->
+                    <div class="flex-1 space-y-1">
+                        <div class="h-4 bg-slate-200 rounded w-3/4"></div> <!-- nombre -->
+                        <div class="h-3 bg-slate-200 rounded w-1/2"></div> <!-- estadística -->
+                    </div>
+                </div>
+                    </div>
+</div>
+</section>    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+            </main>
+
+            <!-- Footer -->
+            <footer class="bg-slate-950 shadow rounded-lg m-1 sm:m-2">
+                <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
+                    <div class="h-32 sm:h-40 flex items-center justify-center md:justify-between">
+                        <div class="inline-block">
+                            <img alt="TuJonrón.com" src="/images/logo_bw.png" class="w-auto h-8">
+                            <div class="text-sm text-slate-300 text-center mt-2 sm:hidden">
+                                <a href="/sobre-tujonron" class="hover:text-white transition-colors">Sobre TuJonrón.com</a>
+                                <span class="mx-2">•</span>
+                                <span>© 2025</span>
+                            </div>
+                        </div>
+                        <div class="text-md font-medium text-slate-300 text-center hidden sm:block">
+                            <a href="/sobre-tujonron" class="hover:text-white transition-colors">Sobre TuJonrón.com</a>
+                            <span class="mx-3">•</span>
+                            <span>© 2025 TuJonrón.com</span>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+
+        </div>
+
+        <!-- Highcharts -->
+        <script src="https://code.highcharts.com/highcharts.js"></script>
+        <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+    <script src="/livewire/livewire.min.js?id=df3a17f2"   data-csrf="WdKr3vKrBAxsPkksnwwlyOFnRC4WOJ3PCSHiifBt" data-update-uri="/livewire/update" data-navigate-once="true"></script>
+</body>
+</html>
