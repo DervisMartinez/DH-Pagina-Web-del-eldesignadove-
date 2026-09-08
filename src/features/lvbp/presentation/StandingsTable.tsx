@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 
+import Image from 'next/image';
+
 interface TeamStanding {
   id: number;
   team: string;
@@ -16,8 +18,7 @@ interface TeamStanding {
 
 interface StandingsData {
   updatedAt: string;
-  season: string;
-  standings: TeamStanding[];
+  standings: Record<string, TeamStanding[]>;
 }
 
 export function StandingsTable() {
@@ -26,6 +27,15 @@ export function StandingsTable() {
   const [activeTab, setActiveTab] = useState('Regular');
 
   const tabs = ['Regular', 'Comodín', 'Round Robin', 'Final'];
+
+  // Map of team codes to their local logo filenames
+  const teamLogos: Record<string, string> = {
+    'MAG': '/ICONS-LVBP/Magallanes_B.B.C._logo.png',
+    'ZUL': '/ICONS-LVBP/aquilasdelzulia.jpg',
+    'CAR': '/ICONS-LVBP/caribeslogo.webp',
+    'LEO': '/ICONS-LVBP/leoneslogo.jpg',
+    'LAR': '/ICONS-LVBP/logo-cardenales.png',
+  };
 
   useEffect(() => {
     // Simulando actualización en tiempo real con polling cada 30 segundos
@@ -45,6 +55,8 @@ export function StandingsTable() {
     const interval = setInterval(fetchData, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  const currentData = data?.standings[activeTab] || [];
 
   return (
     <div className="w-full max-w-4xl mx-auto bg-surface-container-low rounded-2xl shadow-2xl overflow-hidden border border-surface-container-highest">
@@ -90,19 +102,31 @@ export function StandingsTable() {
                     Actualizando posiciones en tiempo real...
                   </td>
                 </tr>
+              ) : currentData.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="py-12 text-center text-on-surface-variant">
+                    No hay datos disponibles para esta etapa todavía.
+                  </td>
+                </tr>
               ) : (
-                data?.standings.map((team, index) => (
+                currentData.map((team, index) => (
                   <tr 
                     key={team.id} 
                     className={`border-b border-surface-container-lowest hover:bg-surface-container transition-colors ${
-                      index < 4 ? 'bg-primary/5' : ''
+                      activeTab === 'Regular' && index < 4 ? 'bg-primary/5' : ''
                     }`}
                   >
                     <td className="py-4 px-4 flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center text-primary font-bold text-xs shrink-0">
-                        {team.code}
-                      </div>
-                      <span className="text-secondary font-medium mr-1">{team.status}</span>
+                      {teamLogos[team.code] ? (
+                        <div className="relative w-8 h-8 rounded-full overflow-hidden bg-white shrink-0 shadow-sm border border-outline-variant/30 flex items-center justify-center">
+                          <Image src={teamLogos[team.code]} alt={`Logo ${team.team}`} fill className="object-contain p-1" unoptimized />
+                        </div>
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-surface-container-highest flex items-center justify-center text-primary font-bold text-xs shrink-0 border border-outline-variant/30">
+                          {team.code}
+                        </div>
+                      )}
+                      <span className="text-secondary font-medium mr-1 w-4 text-center">{team.status}</span>
                       <span className="text-on-surface font-bold md:text-body-lg">{team.team}</span>
                     </td>
                     <td className="py-4 px-2 text-center text-on-surface-variant font-stat-numeric text-[15px]">{team.jj}</td>
@@ -118,11 +142,13 @@ export function StandingsTable() {
         </div>
 
         {/* Legend */}
-        <div className="mt-6 flex flex-wrap items-center gap-4 text-[11px] md:text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider">
-          <span className="flex items-center gap-1.5"><span className="text-secondary font-bold">*</span> Clasificado al Round Robin</span>
-          <span className="flex items-center gap-1.5"><span className="text-secondary font-bold">#</span> Puestos de Comodín</span>
-          <span className="flex items-center gap-1.5"><span className="text-secondary font-bold">++</span> Eliminados</span>
-        </div>
+        {activeTab === 'Regular' && (
+          <div className="mt-6 flex flex-wrap items-center gap-4 text-[11px] md:text-label-caps font-label-caps text-on-surface-variant uppercase tracking-wider">
+            <span className="flex items-center gap-1.5"><span className="text-secondary font-bold">*</span> Clasificado al Round Robin</span>
+            <span className="flex items-center gap-1.5"><span className="text-secondary font-bold">#</span> Puestos de Comodín</span>
+            <span className="flex items-center gap-1.5"><span className="text-secondary font-bold">++</span> Eliminados</span>
+          </div>
+        )}
       </div>
     </div>
   );

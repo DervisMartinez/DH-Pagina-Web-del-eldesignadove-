@@ -7,10 +7,9 @@ import Link from 'next/link';
 const SLIDES = [
   {
     id: 1,
-    image:
-      'https://lh3.googleusercontent.com/aida/AEtjO1W4QOuzc0mheMZwkB82NuMHc78TaNVbgEqMPWmZqg7D154JZNLYwSxOlunphnMjYQxz5u4LZW4SAmn9PzHT8CfdMxLhElfUnwe4uOB3xW5GAMytJHM5b6j5iG4XS_oPmnUr4kbdtyDMGEPyOVU18icMNwe7uyuNyQ4hI0s3DdXEcbeeTnICbOEzZ-w41GE-qYKcwaMLbPcgFH_pFazhoXS9_KyHNENtnjq6SU56YjDD-NC5xf7Qax9W',
-    alt: 'Bateador profesional en pleno contacto visual',
-    tag: 'Fotografía de Autor • Captura Nocturna',
+    image: '/caribes celebration.png',
+    alt: 'Celebración de Caribes de Anzoátegui en el diamante',
+    tag: 'Fotografía de Autor • Celebración',
     tech: '35mm • 1/2000s • ISO 1200',
     title: 'Impacto en el Plato',
     description:
@@ -18,10 +17,9 @@ const SLIDES = [
   },
   {
     id: 2,
-    image:
-      'https://lh3.googleusercontent.com/aida/AEtjO1VByaByp-pdQCzwTtNxI7g-9z0GwqN_SAoQ-h4NDjSxd5M-bczInuDAyhProBpQ-OTN6dgAbN3SGqOBOwQJm-Ak-fZvD2nuadR6nD5eXusd7QKqTYl0j2j0uLQg0dtWFOtEosLHkGFTR3ilVf4uPMhNeshd6RjtHavHwex8AviAr_kut7vD9Z-m4fnlezABzJr_ISFvrIwkx8g_ktuGrr1OscuDAcuPgW6gmvvzCNTqEvAO3GkD7uy22Q',
-    alt: 'Lanzador zurdo en plena extensión de lanzamiento nocturno',
-    tag: 'Fotografía de Autor • Enfoque Rápido',
+    image: '/magallanes-celebration.jpg',
+    alt: 'Navegantes del Magallanes en momento de triunfo',
+    tag: 'Fotografía de Autor • Triunfo',
     tech: '70-200mm f/2.8 • 1/3200s • ISO 800',
     title: 'Extensión en la Loma',
     description:
