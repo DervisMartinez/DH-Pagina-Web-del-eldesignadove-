@@ -22,8 +22,9 @@ const spaceGrotesk = Space_Grotesk({
 });
 
 export const metadata: Metadata = {
-  title: 'El Designado | Archivo Visual',
-  description: 'Santuario fotográfico dedicado a la captura plástica del deporte rey.',
+  title: 'El Designado | Medio Digital Deportivo',
+  description: 'Medio digital que brinda cobertura de las ligas y eventos más importantes para el fanático venezolano: LVBP, Grandes Ligas (MLB), Clásico Mundial (WBC) y Serie del Caribe.',
+  keywords: ['Béisbol', 'LVBP', 'MLB', 'Grandes Ligas', 'Serie del Caribe', 'Noticias de Béisbol', 'El Designado', 'Deportes', 'Venezuela'],
 };
 
 import { Header } from '@/components/layout/Header';
