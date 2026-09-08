@@ -116,8 +116,8 @@ export function GalleryGrid() {
 
   return (
     <>
-      {/* Navigation & Filters Bar (moved from Masthead to be sticky/part of Grid) */}
-      <div className="bg-surface-dim border-b border-surface-container-highest/60 sticky top-20 z-40">
+      {/* Navigation & Filters Bar */}
+      <div className="bg-surface-dim border-b border-surface-container-highest/60 relative z-10">
         <div className="max-w-[1280px] mx-auto px-margin-mobile md:px-margin-desktop py-4 flex flex-wrap items-center justify-between gap-4">
           <div className="flex flex-wrap items-center gap-2">
             {FILTERS.map((f) => (

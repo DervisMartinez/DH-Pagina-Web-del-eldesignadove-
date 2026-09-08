@@ -19,24 +19,26 @@ export function Manifesto() {
           </div>
           <div className="lg:col-span-8 flex flex-col space-y-4">
             <h2 className="font-headline-lg text-headline-md md:text-headline-lg text-primary uppercase">
-              Béisbol con rigor visual, pureza fotográfica y memoria en celuloide.
+              ¿Quienes Somos?
             </h2>
             <p className="font-body-lead text-body-lead text-secondary leading-relaxed">
-              Santuario fotográfico dedicado a la captura plástica del deporte rey. Sin formato de
-              blog ni reseñas superfluas: cada imagen es tratada como una pieza de colección visual,
-              documentando la plasticidad del movimiento, la luz de diamante y la memoria eterna de
-              la pelota.
+              El Designado es un medio digital que brinda cobertura a las ligas y eventos más
+              importantes para el fanático venezolano, incluyendo la Liga Venezolana de Béisbol
+              Profesional (LVBP), las Grandes Ligas (MLB), el Clásico Mundial de Béisbol (WBC), la
+              Serie del Caribe (SDC) y la Serie de las Américas (SDA). Ofrecemos una perspectiva
+              fresca, impulsada por jóvenes comunicadores deportivos que reportan directamente desde
+              el terreno de juego, ofreciendo entrevistas a jugadores y aficionados, dinámicas
+              interactivas, cobertura en vivo y análisis post-juego
             </p>
             <div className="flex items-center flex-wrap gap-6 pt-2 font-label-caps text-label-caps text-on-surface-variant">
               <span className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-primary" /> FOTOGRAFÍA DE AUTOR
+                <span className="w-1.5 h-1.5 rounded-full bg-primary" /> COBERTURA
               </span>
               <span className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-primary" /> OPTICAS ANALÓGICAS &
-                DIGITALES
+                <span className="w-1.5 h-1.5 rounded-full bg-primary" /> OPINIONENS & DIGITALES
               </span>
               <span className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-primary" /> ARCHIVO PATRIMONIAL
+                <span className="w-1.5 h-1.5 rounded-full bg-primary" /> COBERTURA
               </span>
             </div>
           </div>

@@ -1,7 +1,12 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 export function Header() {
+  const pathname = usePathname();
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 bg-surface-container-lowest/70 backdrop-blur-md shadow-2xl">
       <div className="h-20 max-w-[1280px] mx-auto px-margin-mobile md:px-margin-desktop flex items-center justify-between">
@@ -17,7 +22,11 @@ export function Header() {
         <nav className="hidden lg:flex items-center gap-2">
           <Link
             href="/"
-            className="px-4 py-2 uppercase transition-colors hover:bg-surface-container-highest text-primary font-bold rounded-lg"
+            className={`px-4 py-2 font-label-caps text-[11px] uppercase transition-colors rounded-lg ${
+              pathname === '/'
+                ? 'bg-surface-container-highest text-primary font-bold'
+                : 'text-on-surface-variant hover:text-primary hover:bg-surface-container-low'
+            }`}
           >
             Inicio
           </Link>
@@ -29,13 +38,21 @@ export function Header() {
           </Link>
           <Link
             href="/galeria"
-            className="px-4 py-2 text-on-surface-variant font-label-caps text-label-caps uppercase transition-colors hover:text-primary"
+            className={`px-4 py-2 font-label-caps text-[11px] uppercase transition-colors rounded-lg ${
+              pathname === '/galeria'
+                ? 'bg-surface-container-highest text-primary font-bold'
+                : 'text-on-surface-variant hover:text-primary hover:bg-surface-container-low'
+            }`}
           >
             Galería
           </Link>
           <Link
-            href="/#manifiesto"
-            className="px-4 py-2 text-on-surface-variant font-label-caps text-label-caps uppercase transition-colors hover:text-primary"
+            href="/sobre-nosotros"
+            className={`px-4 py-2 font-label-caps text-[11px] uppercase transition-colors rounded-lg ${
+              pathname === '/sobre-nosotros'
+                ? 'bg-surface-container-highest text-primary font-bold'
+                : 'text-on-surface-variant hover:text-primary hover:bg-surface-container-low'
+            }`}
           >
             Sobre Nosotros
           </Link>

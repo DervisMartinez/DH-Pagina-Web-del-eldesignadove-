@@ -26,11 +26,15 @@ export const metadata: Metadata = {
   description: 'Santuario fotográfico dedicado a la captura plástica del deporte rey.',
 };
 
+import { Header } from '@/components/layout/Header';
+import { Footer } from '@/components/layout/Footer';
+import { RadioProvider } from '@/features/core/providers/RadioContext';
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="es"
-      className={`dark ${chivo.variable} ${hankenGrotesk.variable} ${spaceGrotesk.variable}`}
+      className={`dark ${chivo.variable} ${hankenGrotesk.variable} ${spaceGrotesk.variable} scroll-smooth`}
     >
       <head>
         <link
@@ -42,7 +46,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           rel="stylesheet"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <RadioProvider>
+          <Header />
+          {children}
+          <Footer />
+        </RadioProvider>
+      </body>
     </html>
   );
 }

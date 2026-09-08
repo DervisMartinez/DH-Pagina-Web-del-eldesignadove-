@@ -92,22 +92,7 @@ export function HeroCarousel() {
                 <p className="font-body-lead text-body-md md:text-body-lead text-secondary max-w-xl mb-8 line-clamp-3 md:line-clamp-none">
                   {slide.description}
                 </p>
-                <div className="flex flex-wrap items-center gap-4">
-                  <Link
-                    href="#articulos"
-                    className="px-6 py-3 bg-primary text-on-primary font-label-caps text-label-caps uppercase rounded-lg hover:bg-secondary-fixed transition-colors flex items-center gap-2"
-                  >
-                    <span>Ver Fotografía en Alta</span>
-                    <span className="material-symbols-outlined text-[16px]">fullscreen</span>
-                  </Link>
-                  <Link
-                    href="#articulos"
-                    className="px-6 py-3 bg-surface-container-high/80 backdrop-blur-md text-on-surface font-label-caps text-label-caps uppercase rounded-lg hover:bg-surface-container-highest transition-colors flex items-center gap-2"
-                  >
-                    <span>Ficha Técnica</span>
-                    <span className="material-symbols-outlined text-[16px]">info</span>
-                  </Link>
-                </div>
+                {/* Botones removidos momentáneamente según solicitud */}
               </div>
             </div>
           ))}
