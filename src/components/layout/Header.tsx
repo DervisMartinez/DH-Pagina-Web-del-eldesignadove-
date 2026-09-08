@@ -55,16 +55,6 @@ export function Header() {
               Eventos
             </Link>
             <Link
-              href="/galeria"
-              className={`px-4 py-2 font-label-caps text-[11px] uppercase transition-colors rounded-lg ${
-                pathname === '/galeria'
-                  ? 'bg-surface-container-highest text-primary font-bold'
-                  : 'text-on-surface-variant hover:text-primary hover:bg-surface-container-low'
-              }`}
-            >
-              Galería
-            </Link>
-            <Link
               href="/sobre-nosotros"
               className={`px-4 py-2 font-label-caps text-[11px] uppercase transition-colors rounded-lg ${
                 pathname === '/sobre-nosotros'
@@ -73,6 +63,26 @@ export function Header() {
               }`}
             >
               Sobre Nosotros
+            </Link>
+            <Link
+              href="/nuestro-equipo"
+              className={`px-4 py-2 font-label-caps text-[11px] uppercase transition-colors rounded-lg ${
+                pathname === '/nuestro-equipo'
+                  ? 'bg-surface-container-highest text-primary font-bold'
+                  : 'text-on-surface-variant hover:text-primary hover:bg-surface-container-low'
+              }`}
+            >
+              Nuestro Equipo
+            </Link>
+            <Link
+              href="/contacto"
+              className={`px-4 py-2 font-label-caps text-[11px] uppercase transition-colors rounded-lg ${
+                pathname === '/contacto'
+                  ? 'bg-surface-container-highest text-primary font-bold'
+                  : 'text-on-surface-variant hover:text-primary hover:bg-surface-container-low'
+              }`}
+            >
+              Contacto
             </Link>
           </nav>
           <div className="flex items-center gap-3">
@@ -135,17 +145,6 @@ export function Header() {
             Eventos
           </Link>
           <Link
-            href="/galeria"
-            onClick={closeMenu}
-            className={`p-4 text-center font-label-caps text-label-caps uppercase rounded-xl ${
-              pathname === '/galeria'
-                ? 'bg-surface-container-highest text-primary'
-                : 'text-on-surface hover:bg-surface-container'
-            }`}
-          >
-            Galería
-          </Link>
-          <Link
             href="/sobre-nosotros"
             onClick={closeMenu}
             className={`p-4 text-center font-label-caps text-label-caps uppercase rounded-xl ${
@@ -155,6 +154,28 @@ export function Header() {
             }`}
           >
             Sobre Nosotros
+          </Link>
+          <Link
+            href="/nuestro-equipo"
+            onClick={closeMenu}
+            className={`p-4 text-center font-label-caps text-label-caps uppercase rounded-xl ${
+              pathname === '/nuestro-equipo'
+                ? 'bg-surface-container-highest text-primary'
+                : 'text-on-surface hover:bg-surface-container'
+            }`}
+          >
+            Nuestro Equipo
+          </Link>
+          <Link
+            href="/contacto"
+            onClick={closeMenu}
+            className={`p-4 text-center font-label-caps text-label-caps uppercase rounded-xl ${
+              pathname === '/contacto'
+                ? 'bg-surface-container-highest text-primary'
+                : 'text-on-surface hover:bg-surface-container'
+            }`}
+          >
+            Contacto
           </Link>
         </nav>
       </div>

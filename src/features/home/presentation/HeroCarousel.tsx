@@ -4,61 +4,68 @@ import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 
-const SLIDES = [
-  {
-    id: 1,
-    image: '/caribes celebration.png',
-    alt: 'Celebración de Caribes de Anzoátegui en el diamante',
-    tag: 'Fotografía de Autor • Celebración',
-    tech: '35mm • 1/2000s • ISO 1200',
-    title: 'Impacto en el Plato',
-    description:
-      'Obra fotográfica que captura la disipación cinética y la nube de arcilla roja en el instante exacto del impacto ante los reflectores de estadio.',
-  },
-  {
-    id: 2,
-    image: '/magallanes-celebration.jpg',
-    alt: 'Navegantes del Magallanes en momento de triunfo',
-    tag: 'Fotografía de Autor • Triunfo',
-    tech: '70-200mm f/2.8 • 1/3200s • ISO 800',
-    title: 'Extensión en la Loma',
-    description:
-      'Estudio visual de biomecánica atlética y tensión gestual en el instante de liberación del pitcheo bajo iluminación de diamante.',
-  },
-  {
-    id: 3,
-    image:
-      'https://lh3.googleusercontent.com/aida/AEtjO1XyAMZ6qxVa8mXjg-ioa9Txnis0oozftJFbAz_I7C5uTD3I9a9gBxYnloE7NMvJDdfSE1qou8x3Nzb8-kKLHr0T5oR0xrL_wrKUan-zdxbJ1-NOjO9v43L-KPOmBg3OosG1XtveqGFc3b-z9aBdDVGQQIdRolvAOOgu5yAa5mMagmCJVUdEtmuCwBzBm3fPF1y8rXPcsqB0jJWn0fWL68cVzIHsZTGGImQFGrDkCZhe-VeCeZ0c6BvJ2g',
-    alt: 'Guante de cuero gastado y pelota en dugout',
-    tag: 'Bodegón Deportivo • Luz Natural',
-    tech: '50mm f/1.8 • 1/500s • ISO 200',
-    title: 'Nostalgia de Banco',
-    description:
-      'Primer plano con profundidad de campo reducida que inmortaliza el cuero gastado, las vetas de madera rústica y el silencio previo al juego.',
-  },
-];
+interface Slide {
+  id: number;
+  image: string;
+  alt: string;
+  tag: string;
+  tech: string;
+  title: string;
+  description: string;
+}
 
 export function HeroCarousel() {
+  const [slides, setSlides] = useState<Slide[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const nextSlide = useCallback(() => {
-    setCurrentIndex((prev) => (prev + 1) % SLIDES.length);
+  useEffect(() => {
+    const fetchSlides = async () => {
+      try {
+        const response = await fetch('/api/carousel');
+        const data = await response.json();
+        setSlides(data);
+      } catch (error) {
+        console.error('Error fetching slides:', error);
+      }
+    };
+    fetchSlides();
   }, []);
+
+  const nextSlide = useCallback(() => {
+    if (slides.length > 0) {
+      setCurrentIndex((prev) => (prev + 1) % slides.length);
+    }
+  }, [slides.length]);
 
   const prevSlide = useCallback(() => {
-    setCurrentIndex((prev) => (prev - 1 + SLIDES.length) % SLIDES.length);
-  }, []);
+    if (slides.length > 0) {
+      setCurrentIndex((prev) => (prev - 1 + slides.length) % slides.length);
+    }
+  }, [slides.length]);
 
   useEffect(() => {
-    const timer = setInterval(nextSlide, 7000);
-    return () => clearInterval(timer);
-  }, [nextSlide]);
+    if (slides.length > 0) {
+      const timer = setInterval(nextSlide, 7000);
+      return () => clearInterval(timer);
+    }
+  }, [nextSlide, slides.length]);
+
+  if (slides.length === 0) {
+    return (
+      <section className="w-full relative">
+        <div className="w-full">
+          <div className="relative w-full overflow-hidden bg-surface-container-lowest h-[560px] md:h-[680px] shadow-2xl animate-pulse">
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="w-full relative">
       <div className="w-full">
         <div className="relative w-full overflow-hidden bg-surface-container-lowest h-[560px] md:h-[680px] shadow-2xl">
-          {SLIDES.map((slide, index) => (
+          {slides.map((slide, index) => (
             <div
               key={slide.id}
               className={`absolute inset-0 transition-opacity duration-700 ${
@@ -84,12 +91,9 @@ export function HeroCarousel() {
                     {slide.tech}
                   </span>
                 </div>
-                <h1 className="font-display-lg text-display-lg-mobile md:text-display-lg text-primary tracking-tight uppercase mb-4 leading-none">
+                <h1 className="font-display-lg text-display-lg-mobile md:text-display-lg text-primary tracking-tight uppercase mb-4 md:mb-8 leading-none">
                   {slide.title}
                 </h1>
-                <p className="font-body-lead text-body-md md:text-body-lead text-secondary max-w-xl mb-8 line-clamp-3 md:line-clamp-none">
-                  {slide.description}
-                </p>
                 {/* Botones removidos momentáneamente según solicitud */}
               </div>
             </div>
@@ -97,7 +101,7 @@ export function HeroCarousel() {
 
           <div className="absolute bottom-6 right-6 md:bottom-12 md:right-12 z-20 flex items-center gap-4 bg-surface-dim/80 backdrop-blur-xl px-5 py-3 rounded-full">
             <span className="font-stat-numeric text-stat-numeric text-primary tracking-wider">
-              {String(currentIndex + 1).padStart(2, '0')} / {String(SLIDES.length).padStart(2, '0')}
+              {String(currentIndex + 1).padStart(2, '0')} / {String(slides.length).padStart(2, '0')}
             </span>
             <div className="h-4 w-[1px] bg-outline-variant" />
             <div className="flex items-center gap-2">

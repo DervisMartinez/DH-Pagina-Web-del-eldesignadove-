@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 
 const PHOTOS = [
@@ -109,8 +109,36 @@ export function GalleryGrid() {
   const [activeFilter, setActiveFilter] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'large'>('grid');
   const [selectedPhoto, setSelectedPhoto] = useState<(typeof PHOTOS)[0] | null>(null);
+  const [dynamicPhotos, setDynamicPhotos] = useState<typeof PHOTOS>([]);
 
-  const filteredPhotos = PHOTOS.filter(
+  useEffect(() => {
+    const fetchSlides = async () => {
+      try {
+        const response = await fetch('/api/carousel');
+        const data = await response.json();
+        const mapped = data.map((slide: any) => ({
+          id: 100 + slide.id, // Offset ID to avoid collision
+          title: slide.title,
+          desc: slide.description,
+          category: 'accion',
+          badge: 'Carrusel / Destacada',
+          catName: 'Acción en Terreno',
+          location: 'LVBP',
+          image: slide.image,
+          alt: slide.alt,
+          isLarge: false,
+        }));
+        setDynamicPhotos(mapped);
+      } catch (error) {
+        console.error('Error fetching gallery photos:', error);
+      }
+    };
+    fetchSlides();
+  }, []);
+
+  const allPhotos = [...PHOTOS, ...dynamicPhotos];
+
+  const filteredPhotos = allPhotos.filter(
     (p) => activeFilter === 'all' || p.category === activeFilter
   );
 
