@@ -4,7 +4,7 @@ import { AboutVisuals } from '@/features/about/presentation/AboutVisuals';
 
 export default function AboutPage() {
   return (
-    <main className="w-full bg-background min-h-screen text-on-surface">
+    <main className="w-full bg-background min-h-[100dvh] text-on-surface">
       <div className="flex flex-col w-full">
         <AboutHero />
         <AboutValues />

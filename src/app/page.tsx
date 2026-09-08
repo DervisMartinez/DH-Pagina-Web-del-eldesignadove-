@@ -9,7 +9,7 @@ import { SocialLinks } from '@/features/home/presentation/SocialLinks';
 
 export default function Home() {
   return (
-    <main className="w-full bg-background min-h-screen">
+    <main className="w-full bg-background min-h-[100dvh]">
       <div className="flex flex-col w-full">
         <HeroCarousel />
         <Manifesto />
