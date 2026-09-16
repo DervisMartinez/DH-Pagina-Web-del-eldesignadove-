@@ -21,7 +21,7 @@ export function RadioProvider({ children }: { children: ReactNode }) {
   const [isBuffering, setIsBuffering] = useState(false);
   const audioRef = useRef<HTMLAudioElement>(null);
 
-  const STREAM_URL = 'https://stream.zeno.fm/5xp6jnfnmiouv';
+  const STREAM_URL = 'https://eu8.fastcast4u.com/proxy/eldesignado/stream';
 
   useEffect(() => {
     if ('mediaSession' in navigator) {
