@@ -34,6 +34,9 @@ export function Footer() {
             </span>
             <ul className="space-y-2 font-body-sm text-body-sm text-secondary">
               <li className="hover:text-primary transition-colors">
+                <Link href="/noticias">Noticias & Reportajes</Link>
+              </li>
+              <li className="hover:text-primary transition-colors">
                 <Link href="/lvbp">Resultados y Posiciones LVBP</Link>
               </li>
               <li className="hover:text-primary transition-colors">

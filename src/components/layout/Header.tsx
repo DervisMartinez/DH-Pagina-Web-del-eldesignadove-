@@ -39,6 +39,16 @@ export function Header() {
               Inicio
             </Link>
             <Link
+              href="/noticias"
+              className={`px-4 py-2 font-label-caps text-[11px] uppercase transition-colors rounded-lg ${
+                pathname.startsWith('/noticias')
+                  ? 'bg-surface-container-highest text-primary font-bold'
+                  : 'text-on-surface-variant hover:text-primary hover:bg-surface-container-low'
+              }`}
+            >
+              Noticias
+            </Link>
+            <Link
               href="/lvbp"
               className={`px-4 py-2 font-label-caps text-[11px] uppercase transition-colors rounded-lg ${
                 pathname === '/lvbp'
@@ -125,6 +135,17 @@ export function Header() {
             }`}
           >
             Inicio
+          </Link>
+          <Link
+            href="/noticias"
+            onClick={closeMenu}
+            className={`p-4 text-center font-label-caps text-label-caps uppercase rounded-xl ${
+              pathname.startsWith('/noticias')
+                ? 'bg-surface-container-highest text-primary'
+                : 'text-on-surface hover:bg-surface-container'
+            }`}
+          >
+            Noticias
           </Link>
           <Link
             href="/lvbp"
