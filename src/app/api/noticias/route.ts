@@ -4,27 +4,46 @@ import { pool, getNoticias } from '@/lib/db';
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const category = searchParams.get('category') || undefined;
+  const statusFilter = (searchParams.get('status') as 'all' | 'published' | 'draft') || 'published';
 
-  const noticias = await getNoticias(category);
+  const noticias = await getNoticias(category, statusFilter);
   return NextResponse.json({ noticias });
 }
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { title, subtitle, content, category, author, image_url, is_featured, password } = body;
-
-    // Simple security check
-    const expectedPassword = process.env.ADMIN_PASSWORD || 'eldesignado2025';
-    if (password !== expectedPassword) {
-      return NextResponse.json({ error: 'Contraseña de administrador incorrecta.' }, { status: 401 });
-    }
+    const { id, title, subtitle, content, category, author, image_url, is_featured, status } = body;
 
     if (!title || !content || !image_url) {
       return NextResponse.json(
-        { error: 'Título, contenido e imagen son campos obligatorios.' },
+        { error: 'Título, contenido e imagen son campos requeridos.' },
         { status: 400 }
       );
+    }
+
+    const postStatus = status === 'draft' ? 'draft' : 'published';
+
+    // If ID is provided, it's an UPDATE!
+    if (id) {
+      const res = await pool.query(
+        `UPDATE noticias 
+         SET title = $1, subtitle = $2, content = $3, category = $4, author = $5, image_url = $6, is_featured = $7, status = $8
+         WHERE id = $9
+         RETURNING *`,
+        [
+          title,
+          subtitle || null,
+          content,
+          category || 'LVBP',
+          author || 'Redacción El Designado',
+          image_url,
+          Boolean(is_featured),
+          postStatus,
+          id,
+        ]
+      );
+      return NextResponse.json({ success: true, noticia: res.rows[0], updated: true });
     }
 
     // Auto generate clean slug
@@ -38,8 +57,8 @@ export async function POST(request: Request) {
     const slug = `${baseSlug}-${Date.now().toString().slice(-4)}`;
 
     const res = await pool.query(
-      `INSERT INTO noticias (slug, title, subtitle, content, category, author, image_url, is_featured)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+      `INSERT INTO noticias (slug, title, subtitle, content, category, author, image_url, is_featured, status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        RETURNING *`,
       [
         slug,
@@ -50,13 +69,14 @@ export async function POST(request: Request) {
         author || 'Redacción El Designado',
         image_url,
         Boolean(is_featured),
+        postStatus,
       ]
     );
 
     return NextResponse.json({ success: true, noticia: res.rows[0] });
   } catch (error: any) {
-    console.error('Error creating noticia:', error);
-    return NextResponse.json({ error: error.message || 'Error al guardar la noticia' }, { status: 500 });
+    console.error('Error creating/updating noticia:', error);
+    return NextResponse.json({ error: error.message || 'Error al guardar' }, { status: 500 });
   }
 }
 
@@ -64,12 +84,6 @@ export async function DELETE(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const id = searchParams.get('id');
-    const password = searchParams.get('password');
-
-    const expectedPassword = process.env.ADMIN_PASSWORD || 'eldesignado2025';
-    if (password !== expectedPassword) {
-      return NextResponse.json({ error: 'Contraseña incorrecta.' }, { status: 401 });
-    }
 
     if (!id) {
       return NextResponse.json({ error: 'ID requerido.' }, { status: 400 });

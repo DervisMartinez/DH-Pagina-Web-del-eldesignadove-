@@ -4,7 +4,6 @@ const connectionString =
   process.env.DATABASE_URL ||
   'postgres://postgres.sqwqekmnmqdbzscbnowa:rloE3UK8JjPAn8tS@aws-0-us-east-1.pooler.supabase.com:5432/postgres';
 
-// Global singleton pool across hot reloads in Next.js development
 declare global {
   // eslint-disable-next-line no-var
   var __dbPool: Pool | undefined;
@@ -34,19 +33,46 @@ export interface Noticia {
   author: string;
   image_url: string;
   is_featured: boolean;
+  status: 'published' | 'draft';
   views: number;
   published_at: string;
   created_at: string;
 }
 
-export async function getNoticias(category?: string): Promise<Noticia[]> {
+export interface Usuario {
+  id: number;
+  name: string;
+  username: string;
+  password?: string;
+  role: 'admin' | 'redactor';
+  created_at: string;
+}
+
+export async function getNoticias(
+  category?: string,
+  statusFilter?: 'all' | 'published' | 'draft'
+): Promise<Noticia[]> {
   try {
-    let query = 'SELECT * FROM noticias';
+    const conditions: string[] = [];
     const params: any[] = [];
 
+    // By default, for public pages, only return published articles
+    if (statusFilter === 'all') {
+      // no status condition
+    } else if (statusFilter === 'draft') {
+      conditions.push(`status = 'draft'`);
+    } else {
+      conditions.push(`status = 'published'`);
+    }
+
     if (category && category !== 'Todas') {
-      query += ' WHERE category = $1';
       params.push(category);
+      conditions.push(`category = $${params.length}`);
+    }
+
+    let query = 'SELECT * FROM noticias';
+    if (conditions.length > 0) {
+      query += ` WHERE ${conditions.join(' AND ')}`;
     }
 
     query += ' ORDER BY is_featured DESC, published_at DESC';
@@ -76,12 +102,12 @@ export async function getNoticiaBySlug(slug: string): Promise<Noticia | null> {
 
 export async function getRecentNoticias(limit: number = 3, excludeSlug?: string): Promise<Noticia[]> {
   try {
-    let query = 'SELECT * FROM noticias';
+    let query = `SELECT * FROM noticias WHERE status = 'published'`;
     const params: any[] = [];
 
     if (excludeSlug) {
-      query += ' WHERE slug != $1';
       params.push(excludeSlug);
+      query += ` AND slug != $${params.length}`;
     }
 
     query += ` ORDER BY published_at DESC LIMIT ${limit}`;
@@ -91,5 +117,44 @@ export async function getRecentNoticias(limit: number = 3, excludeSlug?: string)
   } catch (error) {
     console.error('Error fetching recent noticias:', error);
     return [];
+  }
+}
+
+export async function getUsuarios(): Promise<Usuario[]> {
+  try {
+    const res = await pool.query('SELECT id, name, username, role, created_at FROM usuarios ORDER BY id ASC');
+    return res.rows;
+  } catch (error) {
+    console.error('Error fetching usuarios:', error);
+    return [];
+  }
+}
+
+export async function authenticateUsuario(username: string, password: string):Promise<Usuario | null> {
+  try {
+    const res = await pool.query(
+      'SELECT id, name, username, role, created_at FROM usuarios WHERE username = $1 AND password = $2 LIMIT 1',
+      [username.trim().toLowerCase(), password]
+    );
+    if (res.rows.length === 0) {
+      // Check if root emergency password was provided
+      if (
+        (username === 'admin' || username === 'dervis') &&
+        (password === 'eldesignado2025' || password === 'rloE3UK8JjPAn8tS')
+      ) {
+        return {
+          id: 1,
+          name: 'Dervis Martínez',
+          username: 'admin',
+          role: 'admin',
+          created_at: new Date().toISOString(),
+        };
+      }
+      return null;
+    }
+    return res.rows[0];
+  } catch (error) {
+    console.error('Error authenticating usuario:', error);
+    return null;
   }
 }

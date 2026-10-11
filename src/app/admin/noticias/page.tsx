@@ -7,55 +7,145 @@ interface NoticiaItem {
   id: number;
   slug: string;
   title: string;
+  subtitle: string | null;
+  content: string;
   category: string;
   author: string;
-  published_at: string;
+  image_url: string;
+  status: 'published' | 'draft';
   is_featured: boolean;
+  views: number;
+  published_at: string;
 }
 
-export default function AdminNoticiasPage() {
-  const [password, setPassword] = useState('');
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [authError, setAuthError] = useState('');
+interface UserItem {
+  id: number;
+  name: string;
+  username: string;
+  role: 'admin' | 'redactor';
+  created_at: string;
+}
 
-  // Form fields
+interface AuthUser {
+  id: number;
+  name: string;
+  username: string;
+  role: 'admin' | 'redactor';
+}
+
+export default function WordPressAdminPage() {
+  // Authentication
+  const [currentUser, setCurrentUser] = useState<AuthUser | null>(null);
+  const [loginUsername, setLoginUsername] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginError, setLoginError] = useState('');
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
+
+  // Active navigation tab
+  const [activeTab, setActiveTab] = useState<'escritorio' | 'entradas' | 'editor' | 'usuarios'>('escritorio');
+
+  // Filter in Entradas tab
+  const [statusFilter, setStatusFilter] = useState<'all' | 'published' | 'draft'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  // Articles state
+  const [articles, setArticles] = useState<NoticiaItem[]>([]);
+  const [loadingArticles, setLoadingArticles] = useState(false);
+
+  // Editor Form state
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [title, setTitle] = useState('');
   const [subtitle, setSubtitle] = useState('');
   const [content, setContent] = useState('');
   const [category, setCategory] = useState('LVBP');
-  const [author, setAuthor] = useState('Redacción El Designado');
+  const [author, setAuthor] = useState('');
   const [imageUrl, setImageUrl] = useState('/CARRUSEL/Navegantes del Magallanes.jpg');
   const [isFeatured, setIsFeatured] = useState(false);
-
+  const [postStatus, setPostStatus] = useState<'published' | 'draft'>('published');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [message, setMessage] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
 
-  const [articles, setArticles] = useState<NoticiaItem[]>([]);
-  const [loadingArticles, setLoadingArticles] = useState(false);
+  // Users Management state
+  const [users, setUsers] = useState<UserItem[]>([]);
+  const [loadingUsers, setLoadingUsers] = useState(false);
+  const [newUserName, setNewUserName] = useState('');
+  const [newUserUsername, setNewUserUsername] = useState('');
+  const [newUserPassword, setNewUserPassword] = useState('');
+  const [newUserRole, setNewUserRole] = useState<'admin' | 'redactor'>('redactor');
+  const [creatingUser, setCreatingUser] = useState(false);
 
+  // Notifications
+  const [feedback, setFeedback] = useState<{ text: string; type: 'success' | 'error' } | null>(null);
+
+  // Predefined image shortcuts
   const predefinedImages = [
-    { label: 'Navegantes del Magallanes', url: '/CARRUSEL/Navegantes del Magallanes.jpg' },
+    { label: 'Magallanes', url: '/CARRUSEL/Navegantes del Magallanes.jpg' },
     { label: 'Bravos de Margarita', url: '/CARRUSEL/16-12-2024 - Jesus Vargas vs Bravos .jpg' },
     { label: 'Caribes de Anzoátegui', url: '/CARRUSEL/Caribes de Anzoategui.png' },
-    { label: 'Venezuela / WBC Héroes', url: '/CARRUSEL/Los Héroes del 26 - Venezuela alcanza la cima del mundo en una noche épica.jpg' },
-    { label: 'Logo Blanco DH', url: '/DH LOGO fondo blanco.jpeg' },
+    { label: 'Héroes del 26 (Vinotinto)', url: '/CARRUSEL/Los Héroes del 26 - Venezuela alcanza la cima del mundo en una noche épica.jpg' },
+    { label: 'Logo DH', url: '/DH LOGO fondo blanco.jpeg' },
   ];
 
-  const handleLogin = (e: React.FormEvent) => {
+  // Check saved session in localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('dh_admin_session');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setCurrentUser(parsed);
+        setAuthor(parsed.name);
+      } catch (e) {
+        localStorage.removeItem('dh_admin_session');
+      }
+    }
+  }, []);
+
+  // Fetch articles and users when logged in
+  useEffect(() => {
+    if (currentUser) {
+      fetchArticles();
+      if (currentUser.role === 'admin') {
+        fetchUsers();
+      }
+    }
+  }, [currentUser]);
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password === 'eldesignado2025' || password === 'rloE3UK8JjPAn8tS') {
-      setIsAuthenticated(true);
-      setAuthError('');
-      loadArticles();
-    } else {
-      setAuthError('Contraseña incorrecta. Intenta nuevamente.');
+    setIsLoggingIn(true);
+    setLoginError('');
+
+    try {
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: loginUsername, password: loginPassword }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || 'Credenciales incorrectas');
+      }
+
+      setCurrentUser(data.user);
+      setAuthor(data.user.name);
+      localStorage.setItem('dh_admin_session', JSON.stringify(data.user));
+    } catch (err: any) {
+      setLoginError(err.message || 'Error al iniciar sesión');
+    } finally {
+      setIsLoggingIn(false);
     }
   };
 
-  const loadArticles = async () => {
+  const handleLogout = () => {
+    setCurrentUser(null);
+    localStorage.removeItem('dh_admin_session');
+    setActiveTab('escritorio');
+  };
+
+  const fetchArticles = async () => {
     setLoadingArticles(true);
     try {
-      const res = await fetch('/api/noticias');
+      const res = await fetch('/api/noticias?status=all');
       const data = await res.json();
       if (data.noticias) {
         setArticles(data.noticias);
@@ -67,56 +157,110 @@ export default function AdminNoticiasPage() {
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const fetchUsers = async () => {
+    setLoadingUsers(true);
+    try {
+      const res = await fetch('/api/admin/users');
+      const data = await res.json();
+      if (data.users) {
+        setUsers(data.users);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingUsers(false);
+    }
+  };
+
+  const resetEditor = () => {
+    setEditingId(null);
+    setTitle('');
+    setSubtitle('');
+    setContent('');
+    setCategory('LVBP');
+    setAuthor(currentUser ? currentUser.name : 'Redacción El Designado');
+    setImageUrl('/CARRUSEL/Navegantes del Magallanes.jpg');
+    setIsFeatured(false);
+    setPostStatus('published');
+  };
+
+  const startNewPost = () => {
+    resetEditor();
+    setActiveTab('editor');
+  };
+
+  const startEditPost = (item: NoticiaItem) => {
+    setEditingId(item.id);
+    setTitle(item.title);
+    setSubtitle(item.subtitle || '');
+    setContent(item.content);
+    setCategory(item.category);
+    setAuthor(item.author);
+    setImageUrl(item.image_url);
+    setIsFeatured(item.is_featured);
+    setPostStatus(item.status);
+    setActiveTab('editor');
+  };
+
+  const handleSavePost = async (e: React.FormEvent, forceStatus?: 'published' | 'draft') => {
     e.preventDefault();
     setIsSubmitting(true);
-    setMessage(null);
+    setFeedback(null);
+
+    const targetStatus = forceStatus || postStatus;
 
     try {
+      const payload: any = {
+        title,
+        subtitle,
+        content,
+        category,
+        author: author || currentUser?.name || 'Redacción El Designado',
+        image_url: imageUrl,
+        is_featured: isFeatured,
+        status: targetStatus,
+      };
+
+      if (editingId) {
+        payload.id = editingId;
+      }
+
       const res = await fetch('/api/noticias', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          title,
-          subtitle,
-          content,
-          category,
-          author,
-          image_url: imageUrl,
-          is_featured: isFeatured,
-          password: 'eldesignado2025',
-        }),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al guardar');
 
-      if (!res.ok) {
-        throw new Error(data.error || 'Error al publicar noticia');
-      }
+      setFeedback({
+        text: editingId
+          ? '¡Entrada actualizada con éxito!'
+          : targetStatus === 'draft'
+          ? '¡Borrador guardado con éxito!'
+          : '¡Entrada publicada en vivo exitosamente!',
+        type: 'success',
+      });
 
-      setMessage({ text: '¡Noticia publicada con éxito en Supabase!', type: 'success' });
-      setTitle('');
-      setSubtitle('');
-      setContent('');
-      setIsFeatured(false);
-      loadArticles();
+      fetchArticles();
+      if (!editingId) resetEditor();
+      setActiveTab('entradas');
     } catch (err: any) {
-      setMessage({ text: err.message || 'Error inesperado', type: 'error' });
+      setFeedback({ text: err.message, type: 'error' });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleDelete = async (id: number) => {
-    if (!confirm('¿Estás seguro de que deseas eliminar este reportaje?')) return;
+  const handleDeletePost = async (id: number) => {
+    if (!confirm('¿Estás seguro de que deseas eliminar esta entrada?')) return;
 
     try {
-      const res = await fetch(`/api/noticias?id=${id}&password=eldesignado2025`, {
-        method: 'DELETE',
-      });
+      const res = await fetch(`/api/noticias?id=${id}`, { method: 'DELETE' });
       if (res.ok) {
-        setMessage({ text: 'Reportaje eliminado correctamente.', type: 'success' });
-        loadArticles();
+        setFeedback({ text: 'Entrada eliminada correctamente.', type: 'success' });
+        fetchArticles();
       } else {
         alert('Error al eliminar');
       }
@@ -125,53 +269,141 @@ export default function AdminNoticiasPage() {
     }
   };
 
-  if (!isAuthenticated) {
+  const handleCreateUser = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setCreatingUser(true);
+    setFeedback(null);
+
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: newUserName,
+          username: newUserUsername,
+          password: newUserPassword,
+          role: newUserRole,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al crear usuario');
+
+      setFeedback({ text: `Usuario "${newUserName}" creado exitosamente.`, type: 'success' });
+      setNewUserName('');
+      setNewUserUsername('');
+      setNewUserPassword('');
+      fetchUsers();
+    } catch (err: any) {
+      setFeedback({ text: err.message, type: 'error' });
+    } finally {
+      setCreatingUser(false);
+    }
+  };
+
+  const handleDeleteUser = async (id: number, name: string) => {
+    if (!confirm(`¿Eliminar al redactor "${name}"? Ya no podrá entrar a redactar.`)) return;
+
+    try {
+      const res = await fetch(`/api/admin/users?id=${id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error');
+
+      setFeedback({ text: 'Usuario eliminado.', type: 'success' });
+      fetchUsers();
+    } catch (err: any) {
+      alert(err.message);
+    }
+  };
+
+  // Filtered articles list
+  const filteredArticles = articles.filter((item) => {
+    const matchesStatus =
+      statusFilter === 'all'
+        ? true
+        : statusFilter === 'published'
+        ? item.status === 'published'
+        : item.status === 'draft';
+
+    const matchesSearch =
+      searchQuery === '' ||
+      item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.category.toLowerCase().includes(searchQuery.toLowerCase());
+
+    return matchesStatus && matchesSearch;
+  });
+
+  const countPublished = articles.filter((a) => a.status === 'published').length;
+  const countDrafts = articles.filter((a) => a.status === 'draft').length;
+  const totalViews = articles.reduce((acc, curr) => acc + (curr.views || 0), 0);
+
+  // -------------------------------------------------------------
+  // LOGIN SCREEN
+  // -------------------------------------------------------------
+  if (!currentUser) {
     return (
-      <main className="w-full bg-background min-h-[100dvh] flex items-center justify-center p-4">
-        <div className="w-full max-w-md bg-surface-container-low border border-surface-container-highest p-8 rounded-3xl shadow-2xl">
-          <div className="flex items-center gap-3 mb-6">
-            <span className="w-3 h-3 rounded-full bg-primary" />
-            <span className="font-label-caps text-xs text-primary uppercase tracking-widest font-bold">
+      <main className="w-full bg-surface-container-lowest min-h-[100dvh] flex items-center justify-center p-4">
+        <div className="w-full max-w-md bg-surface-container-low border border-surface-container-highest p-8 md:p-10 rounded-3xl shadow-2xl">
+          <div className="flex flex-col items-center mb-8">
+            <div className="w-16 h-16 rounded-2xl bg-primary text-on-primary font-black text-2xl flex items-center justify-center shadow-lg shadow-primary/30 mb-4">
+              DH
+            </div>
+            <h1 className="font-display-md text-2xl text-primary font-bold tracking-tight">
               Panel Administrativo
-            </span>
+            </h1>
+            <p className="font-label-caps text-[11px] text-outline uppercase tracking-widest mt-1">
+              El Designado • WordPress CMS
+            </p>
           </div>
-          <h1 className="font-display-md text-2xl text-primary font-bold mb-2">
-            El Designado • Redacción
-          </h1>
-          <p className="text-secondary text-sm mb-6">
-            Ingresa tu clave de acceso para publicar noticias y reportajes en la base de datos de Supabase.
-          </p>
 
           <form onSubmit={handleLogin} className="space-y-4">
             <div>
-              <label className="block text-xs font-label-caps uppercase text-outline mb-2">
-                Clave de Acceso
+              <label className="block text-xs font-label-caps uppercase text-outline mb-1.5 font-bold">
+                Usuario o Correo
               </label>
               <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••••••"
+                type="text"
+                value={loginUsername}
+                onChange={(e) => setLoginUsername(e.target.value)}
+                placeholder="ej: admin, jguerra"
                 required
-                className="w-full p-3.5 bg-surface-container border border-surface-container-highest rounded-xl text-on-surface text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all"
+                className="w-full p-3.5 bg-surface-container border border-surface-container-highest rounded-xl text-on-surface text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
               />
             </div>
 
-            {authError && (
-              <p className="text-xs text-error font-medium">{authError}</p>
+            <div>
+              <label className="block text-xs font-label-caps uppercase text-outline mb-1.5 font-bold">
+                Contraseña
+              </label>
+              <input
+                type="password"
+                value={loginPassword}
+                onChange={(e) => setLoginPassword(e.target.value)}
+                placeholder="••••••••••••"
+                required
+                className="w-full p-3.5 bg-surface-container border border-surface-container-highest rounded-xl text-on-surface text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+              />
+            </div>
+
+            {loginError && (
+              <div className="p-3 bg-error/10 border border-error/30 rounded-xl text-error text-xs font-medium">
+                {loginError}
+              </div>
             )}
 
             <button
               type="submit"
-              className="w-full py-3.5 rounded-xl bg-primary text-on-primary font-label-caps uppercase text-xs font-bold tracking-wider hover:opacity-90 transition-opacity"
+              disabled={isLoggingIn}
+              className="w-full py-4 rounded-xl bg-primary text-on-primary font-label-caps uppercase text-xs font-bold tracking-widest hover:opacity-90 disabled:opacity-50 transition-all shadow-lg shadow-primary/20"
             >
-              Entrar al Panel
+              {isLoggingIn ? 'Verificando...' : 'Acceder al Escritorio'}
             </button>
           </form>
 
-          <div className="mt-6 pt-6 border-t border-surface-container-highest text-center">
+          <div className="mt-8 pt-6 border-t border-surface-container-highest text-center">
             <Link href="/noticias" className="text-xs text-secondary hover:text-primary transition-colors">
-              ← Volver a Noticias
+              ← Volver a la página web
             </Link>
           </div>
         </div>
@@ -179,275 +411,861 @@ export default function AdminNoticiasPage() {
     );
   }
 
+  // -------------------------------------------------------------
+  // WORDPRESS-STYLE DASHBOARD
+  // -------------------------------------------------------------
   return (
-    <main className="w-full bg-background min-h-[100dvh] text-on-surface pt-28 md:pt-36 pb-24">
-      <div className="max-w-[1200px] mx-auto px-margin-mobile md:px-margin-desktop">
-        {/* Top bar */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-10 pb-6 border-b border-surface-container-highest">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse" />
-              <span className="font-label-caps text-xs text-green-400 uppercase font-bold tracking-widest">
-                Supabase Conectado
+    <div className="w-full min-h-[100dvh] bg-surface-container-lowest text-on-surface flex flex-col md:flex-row">
+      {/* WORDPRESS SIDEBAR */}
+      <aside className="w-full md:w-64 bg-surface-container-low border-r border-surface-container-highest flex flex-col justify-between shrink-0">
+        <div>
+          {/* Brand header */}
+          <div className="p-6 border-b border-surface-container-highest flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-primary text-on-primary font-black text-lg flex items-center justify-center shadow-md">
+              DH
+            </div>
+            <div>
+              <span className="font-display-md text-base text-primary font-bold block leading-none">
+                El Designado
+              </span>
+              <span className="font-label-caps text-[9px] text-outline uppercase tracking-widest">
+                WordPress CMS
               </span>
             </div>
-            <h1 className="font-display-lg text-3xl md:text-4xl text-primary font-black uppercase">
-              Panel de Redacción & Prensa
-            </h1>
           </div>
 
-          <div className="flex items-center gap-3">
-            <Link
-              href="/noticias"
-              target="_blank"
-              className="px-4 py-2 rounded-xl bg-surface-container text-xs font-label-caps uppercase text-secondary hover:text-primary transition-colors border border-surface-container-highest"
-            >
-              Ver Noticias en Vivo ↗
-            </Link>
-            <button
-              onClick={() => setIsAuthenticated(false)}
-              className="px-4 py-2 rounded-xl bg-error/10 text-error hover:bg-error/20 text-xs font-label-caps uppercase transition-colors"
-            >
-              Cerrar Sesión
-            </button>
+          {/* User Profile Card */}
+          <div className="p-4 mx-4 my-4 rounded-2xl bg-surface-container border border-surface-container-highest flex items-center gap-3">
+            <div className="w-9 h-9 rounded-full bg-primary/20 text-primary font-bold text-xs flex items-center justify-center shrink-0">
+              {currentUser.name.slice(0, 2).toUpperCase()}
+            </div>
+            <div className="truncate">
+              <span className="text-xs font-bold text-on-surface block truncate">
+                {currentUser.name}
+              </span>
+              <span className="text-[10px] uppercase font-label-caps tracking-wider px-2 py-0.5 rounded bg-primary/10 text-primary inline-block">
+                {currentUser.role === 'admin' ? 'Administrador' : 'Redactor'}
+              </span>
+            </div>
           </div>
+
+          {/* Sidebar Nav Items */}
+          <nav className="p-3 space-y-1">
+            <button
+              onClick={() => setActiveTab('escritorio')}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-label-caps uppercase tracking-wider transition-all ${
+                activeTab === 'escritorio'
+                  ? 'bg-primary text-on-primary font-bold shadow-md'
+                  : 'text-secondary hover:text-primary hover:bg-surface-container'
+              }`}
+            >
+              <span className="material-symbols-outlined text-[18px]">dashboard</span>
+              Escritorio
+            </button>
+
+            <button
+              onClick={() => setActiveTab('entradas')}
+              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-label-caps uppercase tracking-wider transition-all ${
+                activeTab === 'entradas'
+                  ? 'bg-primary text-on-primary font-bold shadow-md'
+                  : 'text-secondary hover:text-primary hover:bg-surface-container'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span className="material-symbols-outlined text-[18px]">article</span>
+                Entradas
+              </div>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-surface-container-highest text-secondary font-bold">
+                {articles.length}
+              </span>
+            </button>
+
+            <button
+              onClick={startNewPost}
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-label-caps uppercase tracking-wider transition-all ${
+                activeTab === 'editor' && !editingId
+                  ? 'bg-primary text-on-primary font-bold shadow-md'
+                  : 'text-secondary hover:text-primary hover:bg-surface-container'
+              }`}
+            >
+              <span className="material-symbols-outlined text-[18px]">add_circle</span>
+              Añadir Entrada
+            </button>
+
+            {currentUser.role === 'admin' && (
+              <button
+                onClick={() => setActiveTab('usuarios')}
+                className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-label-caps uppercase tracking-wider transition-all ${
+                  activeTab === 'usuarios'
+                    ? 'bg-primary text-on-primary font-bold shadow-md'
+                    : 'text-secondary hover:text-primary hover:bg-surface-container'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  <span className="material-symbols-outlined text-[18px]">group</span>
+                  Redactores & Usuarios
+                </div>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-surface-container-highest text-secondary font-bold">
+                  {users.length}
+                </span>
+              </button>
+            )}
+          </nav>
         </div>
 
-        {message && (
+        {/* Bottom links */}
+        <div className="p-4 border-t border-surface-container-highest space-y-2">
+          <Link
+            href="/noticias"
+            target="_blank"
+            className="w-full flex items-center justify-center gap-2 p-2.5 rounded-xl text-xs font-label-caps uppercase text-secondary hover:text-primary hover:bg-surface-container transition-colors"
+          >
+            <span className="material-symbols-outlined text-[16px]">open_in_new</span>
+            Ver Sitio Web
+          </Link>
+
+          <button
+            onClick={handleLogout}
+            className="w-full flex items-center justify-center gap-2 p-2.5 rounded-xl text-xs font-label-caps uppercase text-error hover:bg-error/10 transition-colors"
+          >
+            <span className="material-symbols-outlined text-[16px]">logout</span>
+            Cerrar Sesión
+          </button>
+        </div>
+      </aside>
+
+      {/* MAIN CONTENT AREA */}
+      <main className="flex-1 p-6 md:p-10 overflow-y-auto">
+        {/* Global Feedback notification */}
+        {feedback && (
           <div
-            className={`p-4 rounded-2xl mb-8 flex items-center justify-between ${
-              message.type === 'success'
+            className={`p-4 rounded-2xl mb-8 flex items-center justify-between shadow-lg ${
+              feedback.type === 'success'
                 ? 'bg-green-500/10 border border-green-500/30 text-green-400'
                 : 'bg-error/10 border border-error/30 text-error'
             }`}
           >
-            <span className="text-sm font-medium">{message.text}</span>
-            <button onClick={() => setMessage(null)} className="text-xs font-bold uppercase">
+            <span className="text-sm font-medium">{feedback.text}</span>
+            <button onClick={() => setFeedback(null)} className="text-xs font-bold uppercase p-1">
               ✕
             </button>
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-          {/* Creator Form */}
-          <div className="lg:col-span-7 bg-surface-container-low border border-surface-container-highest p-6 md:p-8 rounded-3xl shadow-xl">
-            <h2 className="font-headline-sm text-xl text-primary font-bold mb-6 flex items-center gap-2">
-              <span className="material-symbols-outlined text-primary">add_circle</span>
-              Escribir Nuevo Reportaje
-            </h2>
-
-            <form onSubmit={handleSubmit} className="space-y-6">
+        {/* --------------------------------------------------------- */}
+        {/* TAB 1: ESCRITORIO (DASHBOARD) */}
+        {/* --------------------------------------------------------- */}
+        {activeTab === 'escritorio' && (
+          <div className="space-y-8 max-w-6xl">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
-                <label className="block text-xs font-label-caps uppercase text-outline mb-2">
-                  Título de la Noticia *
-                </label>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  placeholder="Ej: Magallanes vence a Leones en vibrante duelo de pitcheo"
-                  required
-                  className="w-full p-3.5 bg-surface-container border border-surface-container-highest rounded-xl text-on-surface text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                />
+                <h1 className="font-display-lg text-3xl md:text-4xl text-primary font-black uppercase">
+                  Bienvenido, {currentUser.name} 👋
+                </h1>
+                <p className="text-secondary text-sm mt-1">
+                  Resumen general de publicaciones, redactores y métricas del medio.
+                </p>
               </div>
 
-              <div>
-                <label className="block text-xs font-label-caps uppercase text-outline mb-2">
-                  Bajante / Subtítulo (Opcional pero recomendado)
-                </label>
-                <input
-                  type="text"
-                  value={subtitle}
-                  onChange={(e) => setSubtitle(e.target.value)}
-                  placeholder="Ej: La novena turca definió las acciones en el noveno inning con jonrón decisivo..."
-                  className="w-full p-3.5 bg-surface-container border border-surface-container-highest rounded-xl text-on-surface text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary"
-                />
+              <button
+                onClick={startNewPost}
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-primary text-on-primary font-label-caps uppercase text-xs font-bold tracking-wider hover:opacity-90 shadow-lg shadow-primary/20"
+              >
+                <span className="material-symbols-outlined text-[18px]">edit_note</span>
+                Redactar Nueva Entrada
+              </button>
+            </div>
+
+            {/* KPI Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="p-6 rounded-3xl bg-surface-container-low border border-surface-container-highest shadow-xl">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-label-caps text-xs text-outline uppercase tracking-wider">
+                    Publicadas
+                  </span>
+                  <span className="w-8 h-8 rounded-full bg-green-500/10 text-green-400 flex items-center justify-center material-symbols-outlined text-[18px]">
+                    check_circle
+                  </span>
+                </div>
+                <div className="text-3xl font-black text-primary">{countPublished}</div>
+                <p className="text-[11px] text-secondary mt-1">Visibles en la página web</p>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-label-caps uppercase text-outline mb-2">
-                    Categoría
-                  </label>
-                  <select
-                    value={category}
-                    onChange={(e) => setCategory(e.target.value)}
-                    className="w-full p-3.5 bg-surface-container border border-surface-container-highest rounded-xl text-on-surface text-sm outline-none focus:border-primary cursor-pointer"
+              <div className="p-6 rounded-3xl bg-surface-container-low border border-surface-container-highest shadow-xl">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-label-caps text-xs text-outline uppercase tracking-wider">
+                    Borradores
+                  </span>
+                  <span className="w-8 h-8 rounded-full bg-amber-500/10 text-amber-400 flex items-center justify-center material-symbols-outlined text-[18px]">
+                    drafts
+                  </span>
+                </div>
+                <div className="text-3xl font-black text-amber-400">{countDrafts}</div>
+                <p className="text-[11px] text-secondary mt-1">Listos para revisión o edición</p>
+              </div>
+
+              <div className="p-6 rounded-3xl bg-surface-container-low border border-surface-container-highest shadow-xl">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-label-caps text-xs text-outline uppercase tracking-wider">
+                    Lecturas / Vistas
+                  </span>
+                  <span className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center material-symbols-outlined text-[18px]">
+                    visibility
+                  </span>
+                </div>
+                <div className="text-3xl font-black text-primary">{totalViews}</div>
+                <p className="text-[11px] text-secondary mt-1">Vistas totales en reportajes</p>
+              </div>
+
+              <div className="p-6 rounded-3xl bg-surface-container-low border border-surface-container-highest shadow-xl">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-label-caps text-xs text-outline uppercase tracking-wider">
+                    Redactores
+                  </span>
+                  <span className="w-8 h-8 rounded-full bg-sky-500/10 text-sky-400 flex items-center justify-center material-symbols-outlined text-[18px]">
+                    group
+                  </span>
+                </div>
+                <div className="text-3xl font-black text-sky-400">
+                  {currentUser.role === 'admin' ? users.length : 'Equipo DH'}
+                </div>
+                <p className="text-[11px] text-secondary mt-1">Usuarios autorizados</p>
+              </div>
+            </div>
+
+            {/* Quick Actions & Recent articles */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+              <div className="lg:col-span-8 bg-surface-container-low border border-surface-container-highest p-6 md:p-8 rounded-3xl shadow-xl">
+                <div className="flex items-center justify-between mb-6">
+                  <h3 className="font-headline-sm text-lg text-primary font-bold">
+                    Últimas Entradas Registradas
+                  </h3>
+                  <button
+                    onClick={() => setActiveTab('entradas')}
+                    className="text-xs font-label-caps text-primary hover:underline uppercase"
                   >
-                    <option value="LVBP">LVBP</option>
-                    <option value="MLB">Grandes Ligas (MLB)</option>
-                    <option value="Serie del Caribe">Serie del Caribe</option>
-                    <option value="Selección">Selección Vinotinto</option>
-                    <option value="Opinión">Opinión & Análisis</option>
-                  </select>
+                    Ver todas →
+                  </button>
                 </div>
 
-                <div>
-                  <label className="block text-xs font-label-caps uppercase text-outline mb-2">
-                    Autor / Redactor
-                  </label>
-                  <input
-                    type="text"
-                    value={author}
-                    onChange={(e) => setAuthor(e.target.value)}
-                    placeholder="Ej: Jesús Guerra"
-                    className="w-full p-3.5 bg-surface-container border border-surface-container-highest rounded-xl text-on-surface text-sm outline-none focus:border-primary"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-label-caps uppercase text-outline mb-2">
-                  Imagen de Portada * (URL o archivo local)
-                </label>
-                <input
-                  type="text"
-                  value={imageUrl}
-                  onChange={(e) => setImageUrl(e.target.value)}
-                  placeholder="https://... o /CARRUSEL/..."
-                  required
-                  className="w-full p-3.5 bg-surface-container border border-surface-container-highest rounded-xl text-on-surface text-sm outline-none focus:border-primary mb-2"
-                />
-                <span className="text-[11px] text-outline block mb-2">
-                  Atajos rápidos a imágenes ya guardadas en la página:
-                </span>
-                <div className="flex flex-wrap gap-1.5">
-                  {predefinedImages.map((img) => (
-                    <button
-                      key={img.url}
-                      type="button"
-                      onClick={() => setImageUrl(img.url)}
-                      className={`px-2.5 py-1 text-[10px] rounded-lg border transition-colors ${
-                        imageUrl === img.url
-                          ? 'bg-primary text-on-primary border-primary font-bold'
-                          : 'bg-surface-container text-secondary border-surface-container-highest hover:text-primary'
-                      }`}
+                <div className="space-y-3">
+                  {articles.slice(0, 5).map((art) => (
+                    <div
+                      key={art.id}
+                      className="p-4 rounded-2xl bg-surface-container border border-surface-container-highest flex items-center justify-between gap-4"
                     >
-                      {img.label}
-                    </button>
+                      <div className="truncate">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span
+                            className={`text-[9px] uppercase px-2 py-0.5 rounded font-bold font-label-caps ${
+                              art.status === 'published'
+                                ? 'bg-green-500/10 text-green-400'
+                                : 'bg-amber-500/10 text-amber-400'
+                            }`}
+                          >
+                            {art.status === 'published' ? 'Publicada' : 'Borrador'}
+                          </span>
+                          <span className="text-[10px] text-outline font-label-caps">
+                            {art.category} • {art.author}
+                          </span>
+                        </div>
+                        <h4 className="text-sm font-bold text-on-surface truncate">
+                          {art.title}
+                        </h4>
+                      </div>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        <button
+                          onClick={() => startEditPost(art)}
+                          className="px-3 py-1.5 rounded-lg bg-surface-container-highest hover:bg-primary hover:text-on-primary text-xs font-label-caps uppercase transition-colors"
+                        >
+                          Editar
+                        </button>
+                      </div>
+                    </div>
                   ))}
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-label-caps uppercase text-outline mb-2">
-                  Contenido del Reportaje * (Separa párrafos con doble Enter)
-                </label>
-                <textarea
-                  value={content}
-                  onChange={(e) => setContent(e.target.value)}
-                  rows={9}
-                  placeholder="Escribe aquí el cuerpo del artículo o reportaje..."
-                  required
-                  className="w-full p-3.5 bg-surface-container border border-surface-container-highest rounded-xl text-on-surface text-sm outline-none focus:border-primary focus:ring-1 focus:ring-primary font-sans leading-relaxed"
-                />
-              </div>
+              <div className="lg:col-span-4 bg-surface-container-low border border-surface-container-highest p-6 md:p-8 rounded-3xl shadow-xl flex flex-col justify-between">
+                <div>
+                  <h3 className="font-headline-sm text-lg text-primary font-bold mb-3">
+                    Guía de Publicación
+                  </h3>
+                  <ul className="space-y-3 text-xs text-secondary leading-relaxed">
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary font-bold">•</span>
+                      <span>
+                        <strong>Borradores:</strong> Guárdalos para revisar ortografía antes de lanzar.
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary font-bold">•</span>
+                      <span>
+                        <strong>En Portada:</strong> Marca la casilla si quieres que la noticia salga en tamaño gigante.
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <span className="text-primary font-bold">•</span>
+                      <span>
+                        <strong>Párrafos:</strong> Separa las ideas con doble Enter para que la lectura sea fluida.
+                      </span>
+                    </li>
+                  </ul>
+                </div>
 
-              <div className="flex items-center gap-3 p-4 bg-surface-container rounded-xl border border-surface-container-highest">
-                <input
-                  type="checkbox"
-                  id="featured"
-                  checked={isFeatured}
-                  onChange={(e) => setIsFeatured(e.target.checked)}
-                  className="w-4 h-4 accent-primary rounded cursor-pointer"
-                />
-                <label htmlFor="featured" className="text-xs text-on-surface cursor-pointer select-none">
-                  <span className="font-bold text-primary block">Destacar como Noticia Principal</span>
-                  Aparecerá en el encabezado gigante en la portada de noticias.
-                </label>
+                <div className="pt-6 mt-6 border-t border-surface-container-highest">
+                  <span className="text-[11px] text-outline block mb-2 font-label-caps uppercase">
+                    Estado de Servidor
+                  </span>
+                  <div className="flex items-center gap-2 text-xs text-green-400">
+                    <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                    Supabase PostgreSQL Conectado
+                  </div>
+                </div>
               </div>
-
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full py-4 rounded-xl bg-primary text-on-primary font-label-caps uppercase text-xs font-bold tracking-widest hover:opacity-90 disabled:opacity-50 transition-opacity shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
-              >
-                {isSubmitting ? (
-                  <>
-                    <span className="material-symbols-outlined text-[18px] animate-spin">sync</span>
-                    Guardando en Supabase...
-                  </>
-                ) : (
-                  <>
-                    <span className="material-symbols-outlined text-[18px]">publish</span>
-                    Publicar Reportaje en Vivo
-                  </>
-                )}
-              </button>
-            </form>
+            </div>
           </div>
+        )}
 
-          {/* List of current articles */}
-          <div className="lg:col-span-5 flex flex-col space-y-4">
-            <h2 className="font-headline-sm text-xl text-primary font-bold flex items-center justify-between">
-              <span>Reportajes Publicados ({articles.length})</span>
+        {/* --------------------------------------------------------- */}
+        {/* TAB 2: TODAS LAS ENTRADAS (WORDPRESS LIST) */}
+        {/* --------------------------------------------------------- */}
+        {activeTab === 'entradas' && (
+          <div className="space-y-6 max-w-6xl">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-surface-container-highest">
+              <div>
+                <h1 className="font-display-lg text-3xl text-primary font-black uppercase">
+                  Entradas
+                </h1>
+                <p className="text-secondary text-sm">
+                  Gestiona todas las crónicas, notas de prensa y borradores.
+                </p>
+              </div>
+
               <button
-                onClick={loadArticles}
-                className="text-xs font-label-caps text-secondary hover:text-primary flex items-center gap-1"
+                onClick={startNewPost}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-on-primary font-label-caps uppercase text-xs font-bold tracking-wider hover:opacity-90 shadow-lg shadow-primary/20"
               >
-                <span className="material-symbols-outlined text-[16px]">refresh</span>
-                Recargar
+                <span className="material-symbols-outlined text-[18px]">add</span>
+                Añadir Nueva
               </button>
-            </h2>
+            </div>
 
-            {loadingArticles ? (
-              <div className="p-8 text-center text-secondary text-sm bg-surface-container-low rounded-2xl border border-surface-container-highest animate-pulse">
-                Cargando noticias desde Supabase...
+            {/* Filter Tabs & Search Bar */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setStatusFilter('all')}
+                  className={`px-4 py-2 rounded-xl text-xs font-label-caps uppercase font-bold transition-all ${
+                    statusFilter === 'all'
+                      ? 'bg-surface-container-highest text-primary'
+                      : 'text-secondary hover:text-on-surface'
+                  }`}
+                >
+                  Todas ({articles.length})
+                </button>
+                <button
+                  onClick={() => setStatusFilter('published')}
+                  className={`px-4 py-2 rounded-xl text-xs font-label-caps uppercase font-bold transition-all ${
+                    statusFilter === 'published'
+                      ? 'bg-green-500/20 text-green-400'
+                      : 'text-secondary hover:text-on-surface'
+                  }`}
+                >
+                  Publicadas ({countPublished})
+                </button>
+                <button
+                  onClick={() => setStatusFilter('draft')}
+                  className={`px-4 py-2 rounded-xl text-xs font-label-caps uppercase font-bold transition-all ${
+                    statusFilter === 'draft'
+                      ? 'bg-amber-500/20 text-amber-400'
+                      : 'text-secondary hover:text-on-surface'
+                  }`}
+                >
+                  Borradores ({countDrafts})
+                </button>
               </div>
-            ) : articles.length === 0 ? (
-              <div className="p-8 text-center text-secondary text-sm bg-surface-container-low rounded-2xl border border-surface-container-highest">
-                No hay noticias registradas.
+
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Buscar entrada..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full sm:w-64 pl-9 pr-4 py-2 bg-surface-container border border-surface-container-highest rounded-xl text-xs text-on-surface outline-none focus:border-primary"
+                />
+                <span className="material-symbols-outlined text-[16px] text-outline absolute left-2.5 top-2.5">
+                  search
+                </span>
               </div>
-            ) : (
-              <div className="space-y-3 max-h-[720px] overflow-y-auto pr-2">
-                {articles.map((item) => (
-                  <div
-                    key={item.id}
-                    className="p-4 rounded-2xl bg-surface-container-low border border-surface-container-highest hover:border-outline-variant/50 transition-all flex flex-col justify-between gap-3"
-                  >
+            </div>
+
+            {/* Posts Table */}
+            <div className="bg-surface-container-low border border-surface-container-highest rounded-3xl overflow-hidden shadow-xl">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="border-b border-surface-container-highest bg-surface-container text-outline font-label-caps uppercase tracking-wider">
+                      <th className="p-4 font-bold">Título</th>
+                      <th className="p-4 font-bold">Autor</th>
+                      <th className="p-4 font-bold">Categoría</th>
+                      <th className="p-4 font-bold">Estado</th>
+                      <th className="p-4 font-bold text-center">Vistas</th>
+                      <th className="p-4 font-bold text-right">Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-surface-container-highest">
+                    {loadingArticles ? (
+                      <tr>
+                        <td colSpan={6} className="p-12 text-center text-secondary animate-pulse">
+                          Cargando entradas desde la base de datos...
+                        </td>
+                      </tr>
+                    ) : filteredArticles.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="p-12 text-center text-secondary">
+                          No se encontraron entradas en este filtro.
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredArticles.map((art) => (
+                        <tr key={art.id} className="hover:bg-surface-container/50 transition-colors">
+                          <td className="p-4 font-medium max-w-md">
+                            <span className="font-bold text-on-surface block text-sm mb-1 hover:text-primary transition-colors cursor-pointer" onClick={() => startEditPost(art)}>
+                              {art.title}
+                            </span>
+                            <div className="flex items-center gap-2 text-[10px] text-outline font-label-caps">
+                              {art.is_featured && (
+                                <span className="text-yellow-400 font-bold">★ En Portada</span>
+                              )}
+                              <span>Slug: /{art.slug}</span>
+                            </div>
+                          </td>
+                          <td className="p-4 text-secondary whitespace-nowrap">{art.author}</td>
+                          <td className="p-4 text-primary font-bold whitespace-nowrap">{art.category}</td>
+                          <td className="p-4 whitespace-nowrap">
+                            <span
+                              className={`px-3 py-1 rounded-full text-[10px] font-label-caps uppercase font-bold inline-block ${
+                                art.status === 'published'
+                                  ? 'bg-green-500/15 text-green-400 border border-green-500/30'
+                                  : 'bg-amber-500/15 text-amber-400 border border-amber-500/30'
+                              }`}
+                            >
+                              {art.status === 'published' ? 'Publicado' : 'Borrador'}
+                            </span>
+                          </td>
+                          <td className="p-4 text-center font-bold text-secondary">{art.views || 0}</td>
+                          <td className="p-4 text-right whitespace-nowrap">
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                onClick={() => startEditPost(art)}
+                                className="px-3 py-1.5 rounded-lg bg-surface-container-highest hover:bg-primary hover:text-on-primary transition-colors font-bold uppercase text-[10px]"
+                              >
+                                Editar
+                              </button>
+                              {art.status === 'published' && (
+                                <Link
+                                  href={`/noticias/${art.slug}`}
+                                  target="_blank"
+                                  className="px-2.5 py-1.5 rounded-lg bg-surface-container text-secondary hover:text-primary transition-colors font-bold uppercase text-[10px]"
+                                  title="Ver en vivo"
+                                >
+                                  ↗
+                                </Link>
+                              )}
+                              <button
+                                onClick={() => handleDeletePost(art.id)}
+                                className="px-2.5 py-1.5 rounded-lg bg-error/10 text-error hover:bg-error/20 transition-colors font-bold uppercase text-[10px]"
+                                title="Eliminar"
+                              >
+                                ✕
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* --------------------------------------------------------- */}
+        {/* TAB 3: REDACTOR / EDITOR WORDPRESS */}
+        {/* --------------------------------------------------------- */}
+        {activeTab === 'editor' && (
+          <div className="space-y-6 max-w-6xl">
+            <div className="flex items-center justify-between pb-4 border-b border-surface-container-highest">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setActiveTab('entradas')}
+                  className="w-9 h-9 rounded-xl bg-surface-container flex items-center justify-center text-secondary hover:text-primary"
+                >
+                  <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+                </button>
+                <div>
+                  <h1 className="font-display-lg text-2xl md:text-3xl text-primary font-black uppercase">
+                    {editingId ? 'Editar Entrada' : 'Añadir Nueva Entrada'}
+                  </h1>
+                  <p className="text-secondary text-xs">
+                    {editingId ? `Editando entrada #${editingId}` : 'Crea un nuevo reportaje para el portal'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={resetEditor}
+                  className="px-4 py-2 rounded-xl bg-surface-container text-xs font-label-caps uppercase text-secondary hover:text-primary transition-colors"
+                >
+                  Limpiar Formulario
+                </button>
+              </div>
+            </div>
+
+            <form onSubmit={handleSavePost}>
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                {/* Main Content Fields (Left) */}
+                <div className="lg:col-span-8 space-y-6">
+                  {/* Title */}
+                  <div className="bg-surface-container-low border border-surface-container-highest p-6 rounded-3xl shadow-xl">
+                    <label className="block text-xs font-label-caps uppercase text-outline mb-2 font-bold">
+                      Título de la Entrada *
+                    </label>
+                    <input
+                      type="text"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      placeholder="Añade el título periodístico aquí..."
+                      required
+                      className="w-full p-4 bg-surface-container border border-surface-container-highest rounded-2xl text-on-surface text-lg sm:text-xl font-bold outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                    />
+                  </div>
+
+                  {/* Subtitle / Bajante */}
+                  <div className="bg-surface-container-low border border-surface-container-highest p-6 rounded-3xl shadow-xl">
+                    <label className="block text-xs font-label-caps uppercase text-outline mb-2 font-bold">
+                      Bajante / Subtítulo
+                    </label>
+                    <input
+                      type="text"
+                      value={subtitle}
+                      onChange={(e) => setSubtitle(e.target.value)}
+                      placeholder="Resumen o bajante que engancha al lector..."
+                      className="w-full p-3.5 bg-surface-container border border-surface-container-highest rounded-2xl text-on-surface text-sm outline-none focus:border-primary"
+                    />
+                  </div>
+
+                  {/* Content Area */}
+                  <div className="bg-surface-container-low border border-surface-container-highest p-6 rounded-3xl shadow-xl">
+                    <div className="flex items-center justify-between mb-2">
+                      <label className="text-xs font-label-caps uppercase text-outline font-bold">
+                        Cuerpo del Reportaje *
+                      </label>
+                      <span className="text-[11px] text-outline">
+                        💡 Separa los párrafos usando doble salto de línea (Enter)
+                      </span>
+                    </div>
+                    <textarea
+                      value={content}
+                      onChange={(e) => setContent(e.target.value)}
+                      rows={14}
+                      placeholder="Escribe la crónica o reportaje completo aquí..."
+                      required
+                      className="w-full p-4 bg-surface-container border border-surface-container-highest rounded-2xl text-on-surface text-sm font-sans leading-relaxed outline-none focus:border-primary focus:ring-1 focus:ring-primary"
+                    />
+                  </div>
+                </div>
+
+                {/* Publishing Sidebar Controls (Right) */}
+                <div className="lg:col-span-4 space-y-6">
+                  {/* Publicar Box */}
+                  <div className="bg-surface-container-low border border-surface-container-highest p-6 rounded-3xl shadow-xl space-y-4">
+                    <h3 className="font-headline-sm text-base text-primary font-bold pb-3 border-b border-surface-container-highest flex items-center justify-between">
+                      <span>Publicación</span>
+                      <span className="material-symbols-outlined text-primary text-[18px]">publish</span>
+                    </h3>
+
                     <div>
-                      <div className="flex items-center justify-between gap-2 mb-1.5">
-                        <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-primary/10 text-primary font-label-caps uppercase font-bold">
-                          {item.category}
-                        </span>
-                        {item.is_featured && (
-                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-yellow-500/20 text-yellow-300 font-label-caps uppercase font-bold">
-                            ★ En Portada
-                          </span>
-                        )}
-                      </div>
-                      <h4 className="font-headline-sm text-sm text-on-surface font-bold line-clamp-2">
-                        {item.title}
-                      </h4>
-                      <p className="text-[11px] text-outline mt-1 font-label-caps">
-                        Por {item.author}
-                      </p>
+                      <label className="block text-xs font-label-caps uppercase text-outline mb-1 font-bold">
+                        Estado
+                      </label>
+                      <select
+                        value={postStatus}
+                        onChange={(e: any) => setPostStatus(e.target.value)}
+                        className="w-full p-3 bg-surface-container border border-surface-container-highest rounded-xl text-on-surface text-xs outline-none focus:border-primary font-bold cursor-pointer"
+                      >
+                        <option value="published">🟢 Publicado (Visible en web)</option>
+                        <option value="draft">🟡 Borrador (Privado / En redacción)</option>
+                      </select>
                     </div>
 
-                    <div className="flex items-center justify-between pt-2 border-t border-surface-container-highest text-xs">
-                      <Link
-                        href={`/noticias/${item.slug}`}
-                        target="_blank"
-                        className="text-primary hover:underline font-label-caps uppercase text-[11px] font-bold flex items-center gap-1"
+                    <div className="flex items-center gap-3 p-3 bg-surface-container rounded-xl border border-surface-container-highest">
+                      <input
+                        type="checkbox"
+                        id="featuredPost"
+                        checked={isFeatured}
+                        onChange={(e) => setIsFeatured(e.target.checked)}
+                        className="w-4 h-4 accent-primary rounded cursor-pointer"
+                      />
+                      <label htmlFor="featuredPost" className="text-xs text-on-surface cursor-pointer select-none">
+                        <span className="font-bold text-primary block">Destacar en Portada</span>
+                        <span className="text-[10px] text-outline">Aparece en tamaño gigante</span>
+                      </label>
+                    </div>
+
+                    <div className="pt-2 space-y-2">
+                      <button
+                        type="submit"
+                        disabled={isSubmitting}
+                        onClick={() => setPostStatus('published')}
+                        className="w-full py-3.5 rounded-xl bg-primary text-on-primary font-label-caps uppercase text-xs font-bold tracking-widest hover:opacity-90 disabled:opacity-50 transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
                       >
-                        Ver artículo ↗
-                      </Link>
+                        <span className="material-symbols-outlined text-[16px]">check_circle</span>
+                        {editingId ? 'Actualizar Entrada' : 'Publicar Ahora'}
+                      </button>
 
                       <button
-                        onClick={() => handleDelete(item.id)}
-                        className="text-error hover:text-red-400 font-label-caps uppercase text-[11px] font-bold flex items-center gap-1"
+                        type="button"
+                        disabled={isSubmitting}
+                        onClick={(e) => handleSavePost(e, 'draft')}
+                        className="w-full py-3 rounded-xl bg-surface-container text-amber-400 border border-amber-500/30 font-label-caps uppercase text-xs font-bold tracking-wider hover:bg-amber-500/10 transition-colors"
                       >
-                        <span className="material-symbols-outlined text-[14px]">delete</span>
-                        Eliminar
+                        Guardar como Borrador
                       </button>
                     </div>
                   </div>
-                ))}
+
+                  {/* Taxonomy & Metadata */}
+                  <div className="bg-surface-container-low border border-surface-container-highest p-6 rounded-3xl shadow-xl space-y-4">
+                    <h3 className="font-headline-sm text-base text-primary font-bold pb-3 border-b border-surface-container-highest">
+                      Datos del Artículo
+                    </h3>
+
+                    <div>
+                      <label className="block text-xs font-label-caps uppercase text-outline mb-1 font-bold">
+                        Categoría
+                      </label>
+                      <select
+                        value={category}
+                        onChange={(e) => setCategory(e.target.value)}
+                        className="w-full p-3 bg-surface-container border border-surface-container-highest rounded-xl text-on-surface text-xs outline-none focus:border-primary cursor-pointer font-bold"
+                      >
+                        <option value="LVBP">LVBP</option>
+                        <option value="MLB">Grandes Ligas (MLB)</option>
+                        <option value="Serie del Caribe">Serie del Caribe</option>
+                        <option value="Selección">Selección Vinotinto</option>
+                        <option value="Opinión">Opinión & Análisis</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-label-caps uppercase text-outline mb-1 font-bold">
+                        Firma / Autor
+                      </label>
+                      <input
+                        type="text"
+                        value={author}
+                        onChange={(e) => setAuthor(e.target.value)}
+                        placeholder="ej: Jesús Guerra"
+                        className="w-full p-3 bg-surface-container border border-surface-container-highest rounded-xl text-on-surface text-xs outline-none focus:border-primary"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-label-caps uppercase text-outline mb-1 font-bold">
+                        Imagen Destacada
+                      </label>
+                      <input
+                        type="text"
+                        value={imageUrl}
+                        onChange={(e) => setImageUrl(e.target.value)}
+                        placeholder="https://... o /CARRUSEL/..."
+                        required
+                        className="w-full p-3 bg-surface-container border border-surface-container-highest rounded-xl text-on-surface text-xs outline-none focus:border-primary mb-2"
+                      />
+
+                      <div className="space-y-1">
+                        <span className="text-[10px] text-outline block font-label-caps uppercase">
+                          Fotos locales predeterminadas:
+                        </span>
+                        <div className="flex flex-wrap gap-1">
+                          {predefinedImages.map((img) => (
+                            <button
+                              key={img.url}
+                              type="button"
+                              onClick={() => setImageUrl(img.url)}
+                              className={`px-2 py-1 text-[9px] rounded-lg border transition-colors ${
+                                imageUrl === img.url
+                                  ? 'bg-primary text-on-primary border-primary font-bold'
+                                  : 'bg-surface-container text-secondary border-surface-container-highest hover:text-primary'
+                              }`}
+                            >
+                              {img.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-            )}
+            </form>
           </div>
-        </div>
-      </div>
-    </main>
+        )}
+
+        {/* --------------------------------------------------------- */}
+        {/* TAB 4: USUARIOS Y REDACTORES (ADMIN ONLY) */}
+        {/* --------------------------------------------------------- */}
+        {activeTab === 'usuarios' && currentUser.role === 'admin' && (
+          <div className="space-y-8 max-w-6xl">
+            <div className="pb-4 border-b border-surface-container-highest">
+              <h1 className="font-display-lg text-3xl text-primary font-black uppercase">
+                Redactores & Usuarios
+              </h1>
+              <p className="text-secondary text-sm">
+                Crea cuentas para tu equipo de trabajo para que puedan redactar reportajes junto a ti.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+              {/* Create User Form */}
+              <div className="lg:col-span-5 bg-surface-container-low border border-surface-container-highest p-6 md:p-8 rounded-3xl shadow-xl">
+                <h3 className="font-headline-sm text-lg text-primary font-bold mb-4 flex items-center gap-2">
+                  <span className="material-symbols-outlined text-primary">person_add</span>
+                  Añadir Nuevo Redactor
+                </h3>
+
+                <form onSubmit={handleCreateUser} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-label-caps uppercase text-outline mb-1 font-bold">
+                      Nombre Completo *
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="ej: Leonardo Carmona"
+                      value={newUserName}
+                      onChange={(e) => setNewUserName(e.target.value)}
+                      required
+                      className="w-full p-3 bg-surface-container border border-surface-container-highest rounded-xl text-on-surface text-xs outline-none focus:border-primary"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-label-caps uppercase text-outline mb-1 font-bold">
+                      Nombre de Usuario (Para Iniciar Sesión) *
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="ej: lcarmona"
+                      value={newUserUsername}
+                      onChange={(e) => setNewUserUsername(e.target.value)}
+                      required
+                      className="w-full p-3 bg-surface-container border border-surface-container-highest rounded-xl text-on-surface text-xs outline-none focus:border-primary"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-label-caps uppercase text-outline mb-1 font-bold">
+                      Contraseña *
+                    </label>
+                    <input
+                      type="password"
+                      placeholder="••••••••"
+                      value={newUserPassword}
+                      onChange={(e) => setNewUserPassword(e.target.value)}
+                      required
+                      className="w-full p-3 bg-surface-container border border-surface-container-highest rounded-xl text-on-surface text-xs outline-none focus:border-primary"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-label-caps uppercase text-outline mb-1 font-bold">
+                      Rol de Permisos
+                    </label>
+                    <select
+                      value={newUserRole}
+                      onChange={(e: any) => setNewUserRole(e.target.value)}
+                      className="w-full p-3 bg-surface-container border border-surface-container-highest rounded-xl text-on-surface text-xs outline-none focus:border-primary cursor-pointer font-bold"
+                    >
+                      <option value="redactor">Redactor (Puede crear y editar entradas)</option>
+                      <option value="admin">Administrador (Control total y usuarios)</option>
+                    </select>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={creatingUser}
+                    className="w-full py-3.5 rounded-xl bg-primary text-on-primary font-label-caps uppercase text-xs font-bold tracking-wider hover:opacity-90 disabled:opacity-50 transition-all shadow-md shadow-primary/20"
+                  >
+                    {creatingUser ? 'Creando...' : 'Crear Usuario'}
+                  </button>
+                </form>
+              </div>
+
+              {/* Users List */}
+              <div className="lg:col-span-7 bg-surface-container-low border border-surface-container-highest p-6 md:p-8 rounded-3xl shadow-xl">
+                <h3 className="font-headline-sm text-lg text-primary font-bold mb-4 flex items-center justify-between">
+                  <span>Equipo Registrado ({users.length})</span>
+                  <button
+                    onClick={fetchUsers}
+                    className="text-xs text-secondary hover:text-primary font-label-caps uppercase flex items-center gap-1"
+                  >
+                    <span className="material-symbols-outlined text-[14px]">refresh</span>
+                    Actualizar
+                  </button>
+                </h3>
+
+                <div className="space-y-3">
+                  {loadingUsers ? (
+                    <div className="p-8 text-center text-secondary text-xs animate-pulse">
+                      Cargando lista de redactores...
+                    </div>
+                  ) : users.length === 0 ? (
+                    <div className="p-8 text-center text-secondary text-xs">
+                      No hay usuarios registrados.
+                    </div>
+                  ) : (
+                    users.map((usr) => (
+                      <div
+                        key={usr.id}
+                        className="p-4 rounded-2xl bg-surface-container border border-surface-container-highest flex items-center justify-between gap-4"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-primary/20 text-primary font-bold text-xs flex items-center justify-center">
+                            {usr.name.slice(0, 2).toUpperCase()}
+                          </div>
+                          <div>
+                            <span className="text-sm font-bold text-on-surface block">
+                              {usr.name}
+                            </span>
+                            <span className="text-[11px] text-outline font-label-caps">
+                              @{usr.username} • {usr.role === 'admin' ? 'Administrador' : 'Redactor'}
+                            </span>
+                          </div>
+                        </div>
+
+                        {usr.username !== 'admin' && usr.id !== currentUser.id && (
+                          <button
+                            onClick={() => handleDeleteUser(usr.id, usr.name)}
+                            className="px-3 py-1.5 rounded-lg bg-error/10 text-error hover:bg-error/20 text-xs font-label-caps uppercase transition-colors"
+                          >
+                            Eliminar
+                          </button>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </main>
+    </div>
   );
 }
