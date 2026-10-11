@@ -12,6 +12,7 @@ interface NoticiaItem {
   category: string;
   author: string;
   image_url: string;
+  external_link?: string | null;
   status: 'published' | 'draft';
   is_featured: boolean;
   views: number;
@@ -24,6 +25,12 @@ interface UserItem {
   username: string;
   role: 'admin' | 'redactor';
   created_at: string;
+}
+
+interface CategoryItem {
+  id: number;
+  name: string;
+  slug: string;
 }
 
 interface AuthUser {
@@ -42,7 +49,7 @@ export default function WordPressAdminPage() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   // Active navigation tab
-  const [activeTab, setActiveTab] = useState<'escritorio' | 'entradas' | 'editor' | 'usuarios'>('escritorio');
+  const [activeTab, setActiveTab] = useState<'escritorio' | 'entradas' | 'editor' | 'categorias' | 'usuarios'>('escritorio');
 
   // Filter in Entradas tab
   const [statusFilter, setStatusFilter] = useState<'all' | 'published' | 'draft'>('all');
@@ -52,6 +59,11 @@ export default function WordPressAdminPage() {
   const [articles, setArticles] = useState<NoticiaItem[]>([]);
   const [loadingArticles, setLoadingArticles] = useState(false);
 
+  // Categories state
+  const [categories, setCategories] = useState<CategoryItem[]>([]);
+  const [newCategoryName, setNewCategoryName] = useState('');
+  const [creatingCategory, setCreatingCategory] = useState(false);
+
   // Editor Form state
   const [editingId, setEditingId] = useState<number | null>(null);
   const [title, setTitle] = useState('');
@@ -60,9 +72,11 @@ export default function WordPressAdminPage() {
   const [category, setCategory] = useState('LVBP');
   const [author, setAuthor] = useState('');
   const [imageUrl, setImageUrl] = useState('/CARRUSEL/Navegantes del Magallanes.jpg');
-  const [isFeatured, setIsFeatured] = useState(false);
+  const [externalLink, setExternalLink] = useState('');
+  const [isFeatured, setIsFeatured] = useState(true);
   const [postStatus, setPostStatus] = useState<'published' | 'draft'>('published');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
 
   // Users Management state
   const [users, setUsers] = useState<UserItem[]>([]);
@@ -99,10 +113,11 @@ export default function WordPressAdminPage() {
     }
   }, []);
 
-  // Fetch articles and users when logged in
+  // Fetch data when logged in
   useEffect(() => {
     if (currentUser) {
       fetchArticles();
+      fetchCategories();
       if (currentUser.role === 'admin') {
         fetchUsers();
       }
@@ -157,6 +172,21 @@ export default function WordPressAdminPage() {
     }
   };
 
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch('/api/admin/categories');
+      const data = await res.json();
+      if (data.categories) {
+        setCategories(data.categories);
+        if (data.categories.length > 0 && !category) {
+          setCategory(data.categories[0].name);
+        }
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const fetchUsers = async () => {
     setLoadingUsers(true);
     try {
@@ -172,15 +202,83 @@ export default function WordPressAdminPage() {
     }
   };
 
+  // Upload image file directly from PC
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingImage(true);
+    setFeedback(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const res = await fetch('/api/admin/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al subir imagen');
+
+      setImageUrl(data.url);
+      setFeedback({ text: `¡Foto "${file.name}" subida exitosamente a Supabase!`, type: 'success' });
+    } catch (err: any) {
+      setFeedback({ text: err.message || 'Error al subir archivo', type: 'error' });
+    } finally {
+      setIsUploadingImage(false);
+    }
+  };
+
+  const handleCreateCategory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCategoryName.trim()) return;
+
+    setCreatingCategory(true);
+    try {
+      const res = await fetch('/api/admin/categories', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newCategoryName }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al crear categoría');
+
+      setFeedback({ text: `Categoría "${newCategoryName}" creada exitosamente.`, type: 'success' });
+      setNewCategoryName('');
+      fetchCategories();
+    } catch (err: any) {
+      setFeedback({ text: err.message, type: 'error' });
+    } finally {
+      setCreatingCategory(false);
+    }
+  };
+
+  const handleDeleteCategory = async (id: number, name: string) => {
+    if (!confirm(`¿Eliminar categoría "${name}"?`)) return;
+
+    try {
+      const res = await fetch(`/api/admin/categories?id=${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setFeedback({ text: 'Categoría eliminada.', type: 'success' });
+        fetchCategories();
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const resetEditor = () => {
     setEditingId(null);
     setTitle('');
     setSubtitle('');
     setContent('');
-    setCategory('LVBP');
+    setCategory(categories[0]?.name || 'LVBP');
     setAuthor(currentUser ? currentUser.name : 'Redacción El Designado');
     setImageUrl('/CARRUSEL/Navegantes del Magallanes.jpg');
-    setIsFeatured(false);
+    setExternalLink('');
+    setIsFeatured(true);
     setPostStatus('published');
   };
 
@@ -197,6 +295,7 @@ export default function WordPressAdminPage() {
     setCategory(item.category);
     setAuthor(item.author);
     setImageUrl(item.image_url);
+    setExternalLink(item.external_link || '');
     setIsFeatured(item.is_featured);
     setPostStatus(item.status);
     setActiveTab('editor');
@@ -217,6 +316,7 @@ export default function WordPressAdminPage() {
         category,
         author: author || currentUser?.name || 'Redacción El Designado',
         image_url: imageUrl,
+        external_link: externalLink || null,
         is_featured: isFeatured,
         status: targetStatus,
       };
@@ -238,8 +338,8 @@ export default function WordPressAdminPage() {
         text: editingId
           ? '¡Entrada actualizada con éxito!'
           : targetStatus === 'draft'
-          ? '¡Borrador guardado con éxito!'
-          : '¡Entrada publicada en vivo exitosamente!',
+          ? '¡Borrador guardado exitosamente!'
+          : '¡Entrada publicada en vivo y añadida al carrusel/noticias!',
         type: 'success',
       });
 
@@ -316,7 +416,7 @@ export default function WordPressAdminPage() {
     }
   };
 
-  // Filtered articles list
+  // Filtered articles
   const filteredArticles = articles.filter((item) => {
     const matchesStatus =
       statusFilter === 'all'
@@ -336,6 +436,7 @@ export default function WordPressAdminPage() {
 
   const countPublished = articles.filter((a) => a.status === 'published').length;
   const countDrafts = articles.filter((a) => a.status === 'draft').length;
+  const countFeatured = articles.filter((a) => a.is_featured && a.status === 'published').length;
   const totalViews = articles.reduce((acc, curr) => acc + (curr.views || 0), 0);
 
   // -------------------------------------------------------------
@@ -402,8 +503,8 @@ export default function WordPressAdminPage() {
           </form>
 
           <div className="mt-8 pt-6 border-t border-surface-container-highest text-center">
-            <Link href="/noticias" className="text-xs text-secondary hover:text-primary transition-colors">
-              ← Volver a la página web
+            <Link href="/" className="text-xs text-secondary hover:text-primary transition-colors">
+              ← Volver al Home
             </Link>
           </div>
         </div>
@@ -492,6 +593,23 @@ export default function WordPressAdminPage() {
               Añadir Entrada
             </button>
 
+            <button
+              onClick={() => setActiveTab('categorias')}
+              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-label-caps uppercase tracking-wider transition-all ${
+                activeTab === 'categorias'
+                  ? 'bg-primary text-on-primary font-bold shadow-md'
+                  : 'text-secondary hover:text-primary hover:bg-surface-container'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <span className="material-symbols-outlined text-[18px]">label</span>
+                Categorías
+              </div>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-surface-container-highest text-secondary font-bold">
+                {categories.length}
+              </span>
+            </button>
+
             {currentUser.role === 'admin' && (
               <button
                 onClick={() => setActiveTab('usuarios')}
@@ -516,12 +634,21 @@ export default function WordPressAdminPage() {
         {/* Bottom links */}
         <div className="p-4 border-t border-surface-container-highest space-y-2">
           <Link
+            href="/"
+            target="_blank"
+            className="w-full flex items-center justify-center gap-2 p-2.5 rounded-xl text-xs font-label-caps uppercase text-secondary hover:text-primary hover:bg-surface-container transition-colors"
+          >
+            <span className="material-symbols-outlined text-[16px]">home</span>
+            Ver Home (Carrusel) ↗
+          </Link>
+
+          <Link
             href="/noticias"
             target="_blank"
             className="w-full flex items-center justify-center gap-2 p-2.5 rounded-xl text-xs font-label-caps uppercase text-secondary hover:text-primary hover:bg-surface-container transition-colors"
           >
-            <span className="material-symbols-outlined text-[16px]">open_in_new</span>
-            Ver Sitio Web
+            <span className="material-symbols-outlined text-[16px]">article</span>
+            Ver Portal Noticias ↗
           </Link>
 
           <button
@@ -563,7 +690,7 @@ export default function WordPressAdminPage() {
                   Bienvenido, {currentUser.name} 👋
                 </h1>
                 <p className="text-secondary text-sm mt-1">
-                  Resumen general de publicaciones, redactores y métricas del medio.
+                  Control central del portal deportivo y del Carrusel de Portada en el Home.
                 </p>
               </div>
 
@@ -581,14 +708,27 @@ export default function WordPressAdminPage() {
               <div className="p-6 rounded-3xl bg-surface-container-low border border-surface-container-highest shadow-xl">
                 <div className="flex items-center justify-between mb-2">
                   <span className="font-label-caps text-xs text-outline uppercase tracking-wider">
+                    En Carrusel Home
+                  </span>
+                  <span className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center material-symbols-outlined text-[18px]">
+                    view_carousel
+                  </span>
+                </div>
+                <div className="text-3xl font-black text-primary">{countFeatured}</div>
+                <p className="text-[11px] text-secondary mt-1">Noticias en el carrusel de inicio</p>
+              </div>
+
+              <div className="p-6 rounded-3xl bg-surface-container-low border border-surface-container-highest shadow-xl">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-label-caps text-xs text-outline uppercase tracking-wider">
                     Publicadas
                   </span>
                   <span className="w-8 h-8 rounded-full bg-green-500/10 text-green-400 flex items-center justify-center material-symbols-outlined text-[18px]">
                     check_circle
                   </span>
                 </div>
-                <div className="text-3xl font-black text-primary">{countPublished}</div>
-                <p className="text-[11px] text-secondary mt-1">Visibles en la página web</p>
+                <div className="text-3xl font-black text-green-400">{countPublished}</div>
+                <p className="text-[11px] text-secondary mt-1">Visibles en todo el portal</p>
               </div>
 
               <div className="p-6 rounded-3xl bg-surface-container-low border border-surface-container-highest shadow-xl">
@@ -601,35 +741,20 @@ export default function WordPressAdminPage() {
                   </span>
                 </div>
                 <div className="text-3xl font-black text-amber-400">{countDrafts}</div>
-                <p className="text-[11px] text-secondary mt-1">Listos para revisión o edición</p>
+                <p className="text-[11px] text-secondary mt-1">Entradas privadas</p>
               </div>
 
               <div className="p-6 rounded-3xl bg-surface-container-low border border-surface-container-highest shadow-xl">
                 <div className="flex items-center justify-between mb-2">
                   <span className="font-label-caps text-xs text-outline uppercase tracking-wider">
-                    Lecturas / Vistas
-                  </span>
-                  <span className="w-8 h-8 rounded-full bg-primary/10 text-primary flex items-center justify-center material-symbols-outlined text-[18px]">
-                    visibility
-                  </span>
-                </div>
-                <div className="text-3xl font-black text-primary">{totalViews}</div>
-                <p className="text-[11px] text-secondary mt-1">Vistas totales en reportajes</p>
-              </div>
-
-              <div className="p-6 rounded-3xl bg-surface-container-low border border-surface-container-highest shadow-xl">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="font-label-caps text-xs text-outline uppercase tracking-wider">
-                    Redactores
+                    Categorías
                   </span>
                   <span className="w-8 h-8 rounded-full bg-sky-500/10 text-sky-400 flex items-center justify-center material-symbols-outlined text-[18px]">
-                    group
+                    label
                   </span>
                 </div>
-                <div className="text-3xl font-black text-sky-400">
-                  {currentUser.role === 'admin' ? users.length : 'Equipo DH'}
-                </div>
-                <p className="text-[11px] text-secondary mt-1">Usuarios autorizados</p>
+                <div className="text-3xl font-black text-sky-400">{categories.length}</div>
+                <p className="text-[11px] text-secondary mt-1">Secciones configuradas</p>
               </div>
             </div>
 
@@ -638,7 +763,7 @@ export default function WordPressAdminPage() {
               <div className="lg:col-span-8 bg-surface-container-low border border-surface-container-highest p-6 md:p-8 rounded-3xl shadow-xl">
                 <div className="flex items-center justify-between mb-6">
                   <h3 className="font-headline-sm text-lg text-primary font-bold">
-                    Últimas Entradas Registradas
+                    Entradas Recientes
                   </h3>
                   <button
                     onClick={() => setActiveTab('entradas')}
@@ -665,6 +790,11 @@ export default function WordPressAdminPage() {
                           >
                             {art.status === 'published' ? 'Publicada' : 'Borrador'}
                           </span>
+                          {art.is_featured && (
+                            <span className="text-[9px] uppercase px-2 py-0.5 rounded font-bold font-label-caps bg-yellow-500/20 text-yellow-300">
+                              ★ En Carrusel Home
+                            </span>
+                          )}
                           <span className="text-[10px] text-outline font-label-caps">
                             {art.category} • {art.author}
                           </span>
@@ -690,37 +820,28 @@ export default function WordPressAdminPage() {
               <div className="lg:col-span-4 bg-surface-container-low border border-surface-container-highest p-6 md:p-8 rounded-3xl shadow-xl flex flex-col justify-between">
                 <div>
                   <h3 className="font-headline-sm text-lg text-primary font-bold mb-3">
-                    Guía de Publicación
+                    Carrusel del Home
                   </h3>
-                  <ul className="space-y-3 text-xs text-secondary leading-relaxed">
-                    <li className="flex items-start gap-2">
-                      <span className="text-primary font-bold">•</span>
-                      <span>
-                        <strong>Borradores:</strong> Guárdalos para revisar ortografía antes de lanzar.
-                      </span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-primary font-bold">•</span>
-                      <span>
-                        <strong>En Portada:</strong> Marca la casilla si quieres que la noticia salga en tamaño gigante.
-                      </span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-primary font-bold">•</span>
-                      <span>
-                        <strong>Párrafos:</strong> Separa las ideas con doble Enter para que la lectura sea fluida.
-                      </span>
-                    </li>
-                  </ul>
+                  <p className="text-xs text-secondary leading-relaxed mb-4">
+                    Todas las noticias que marques con la casilla <strong>"Destacar en Carrusel de Portada"</strong> aparecerán rotando en el Hero gigante de la página principal.
+                  </p>
+                  <Link
+                    href="/"
+                    target="_blank"
+                    className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-surface-container text-xs font-label-caps uppercase text-primary hover:bg-surface-container-highest transition-colors border border-outline-variant/30"
+                  >
+                    <span>Comprobar Carrusel</span>
+                    <span className="material-symbols-outlined text-[16px]">open_in_new</span>
+                  </Link>
                 </div>
 
                 <div className="pt-6 mt-6 border-t border-surface-container-highest">
                   <span className="text-[11px] text-outline block mb-2 font-label-caps uppercase">
-                    Estado de Servidor
+                    Servidor & Base de Datos
                   </span>
                   <div className="flex items-center gap-2 text-xs text-green-400">
                     <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                    Supabase PostgreSQL Conectado
+                    Supabase PostgreSQL Activo
                   </div>
                 </div>
               </div>
@@ -810,6 +931,7 @@ export default function WordPressAdminPage() {
                       <th className="p-4 font-bold">Título</th>
                       <th className="p-4 font-bold">Autor</th>
                       <th className="p-4 font-bold">Categoría</th>
+                      <th className="p-4 font-bold">Carrusel Home</th>
                       <th className="p-4 font-bold">Estado</th>
                       <th className="p-4 font-bold text-center">Vistas</th>
                       <th className="p-4 font-bold text-right">Acciones</th>
@@ -818,13 +940,13 @@ export default function WordPressAdminPage() {
                   <tbody className="divide-y divide-surface-container-highest">
                     {loadingArticles ? (
                       <tr>
-                        <td colSpan={6} className="p-12 text-center text-secondary animate-pulse">
+                        <td colSpan={7} className="p-12 text-center text-secondary animate-pulse">
                           Cargando entradas desde la base de datos...
                         </td>
                       </tr>
                     ) : filteredArticles.length === 0 ? (
                       <tr>
-                        <td colSpan={6} className="p-12 text-center text-secondary">
+                        <td colSpan={7} className="p-12 text-center text-secondary">
                           No se encontraron entradas en este filtro.
                         </td>
                       </tr>
@@ -832,18 +954,30 @@ export default function WordPressAdminPage() {
                       filteredArticles.map((art) => (
                         <tr key={art.id} className="hover:bg-surface-container/50 transition-colors">
                           <td className="p-4 font-medium max-w-md">
-                            <span className="font-bold text-on-surface block text-sm mb-1 hover:text-primary transition-colors cursor-pointer" onClick={() => startEditPost(art)}>
+                            <span
+                              className="font-bold text-on-surface block text-sm mb-1 hover:text-primary transition-colors cursor-pointer"
+                              onClick={() => startEditPost(art)}
+                            >
                               {art.title}
                             </span>
                             <div className="flex items-center gap-2 text-[10px] text-outline font-label-caps">
-                              {art.is_featured && (
-                                <span className="text-yellow-400 font-bold">★ En Portada</span>
-                              )}
                               <span>Slug: /{art.slug}</span>
+                              {art.external_link && (
+                                <span className="text-primary">🔗 Enlace externo</span>
+                              )}
                             </div>
                           </td>
                           <td className="p-4 text-secondary whitespace-nowrap">{art.author}</td>
                           <td className="p-4 text-primary font-bold whitespace-nowrap">{art.category}</td>
+                          <td className="p-4 whitespace-nowrap">
+                            {art.is_featured ? (
+                              <span className="px-2.5 py-1 rounded-full text-[10px] font-label-caps uppercase font-bold bg-yellow-500/15 text-yellow-300 border border-yellow-500/30">
+                                ★ Activo en Home
+                              </span>
+                            ) : (
+                              <span className="text-outline text-[11px]">—</span>
+                            )}
+                          </td>
                           <td className="p-4 whitespace-nowrap">
                             <span
                               className={`px-3 py-1 rounded-full text-[10px] font-label-caps uppercase font-bold inline-block ${
@@ -911,7 +1045,7 @@ export default function WordPressAdminPage() {
                     {editingId ? 'Editar Entrada' : 'Añadir Nueva Entrada'}
                   </h1>
                   <p className="text-secondary text-xs">
-                    {editingId ? `Editando entrada #${editingId}` : 'Crea un nuevo reportaje para el portal'}
+                    {editingId ? `Editando entrada #${editingId}` : 'Crea un nuevo reportaje para el portal y el Home'}
                   </p>
                 </div>
               </div>
@@ -955,7 +1089,7 @@ export default function WordPressAdminPage() {
                       type="text"
                       value={subtitle}
                       onChange={(e) => setSubtitle(e.target.value)}
-                      placeholder="Resumen o bajante que engancha al lector..."
+                      placeholder="Resumen o bajante que aparece en la portada..."
                       className="w-full p-3.5 bg-surface-container border border-surface-container-highest rounded-2xl text-on-surface text-sm outline-none focus:border-primary"
                     />
                   </div>
@@ -978,6 +1112,23 @@ export default function WordPressAdminPage() {
                       required
                       className="w-full p-4 bg-surface-container border border-surface-container-highest rounded-2xl text-on-surface text-sm font-sans leading-relaxed outline-none focus:border-primary focus:ring-1 focus:ring-primary"
                     />
+                  </div>
+
+                  {/* External Link / Custom Button Link */}
+                  <div className="bg-surface-container-low border border-surface-container-highest p-6 rounded-3xl shadow-xl">
+                    <label className="block text-xs font-label-caps uppercase text-outline mb-2 font-bold">
+                      Enlace Adicional / Botón Personalizado (Opcional)
+                    </label>
+                    <input
+                      type="url"
+                      value={externalLink}
+                      onChange={(e) => setExternalLink(e.target.value)}
+                      placeholder="https://... (ej: video en YouTube, transmisión de radio o enlace externo)"
+                      className="w-full p-3.5 bg-surface-container border border-surface-container-highest rounded-2xl text-on-surface text-sm outline-none focus:border-primary"
+                    />
+                    <span className="text-[11px] text-outline mt-1 block">
+                      Si lo dejas vacío, el botón en el carrusel abrirá automáticamente el reportaje dentro de la web.
+                    </span>
                   </div>
                 </div>
 
@@ -1004,7 +1155,7 @@ export default function WordPressAdminPage() {
                       </select>
                     </div>
 
-                    <div className="flex items-center gap-3 p-3 bg-surface-container rounded-xl border border-surface-container-highest">
+                    <div className="flex items-center gap-3 p-3 bg-surface-container rounded-xl border border-primary/30 shadow-inner">
                       <input
                         type="checkbox"
                         id="featuredPost"
@@ -1013,8 +1164,12 @@ export default function WordPressAdminPage() {
                         className="w-4 h-4 accent-primary rounded cursor-pointer"
                       />
                       <label htmlFor="featuredPost" className="text-xs text-on-surface cursor-pointer select-none">
-                        <span className="font-bold text-primary block">Destacar en Portada</span>
-                        <span className="text-[10px] text-outline">Aparece en tamaño gigante</span>
+                        <span className="font-bold text-primary block">
+                          ★ Mostrar en Carrusel del Home
+                        </span>
+                        <span className="text-[10px] text-outline">
+                          Aparece en el banner gigante rotativo de inicio
+                        </span>
                       </label>
                     </div>
 
@@ -1042,24 +1197,30 @@ export default function WordPressAdminPage() {
 
                   {/* Taxonomy & Metadata */}
                   <div className="bg-surface-container-low border border-surface-container-highest p-6 rounded-3xl shadow-xl space-y-4">
-                    <h3 className="font-headline-sm text-base text-primary font-bold pb-3 border-b border-surface-container-highest">
-                      Datos del Artículo
-                    </h3>
+                    <div className="flex items-center justify-between pb-3 border-b border-surface-container-highest">
+                      <h3 className="font-headline-sm text-base text-primary font-bold">
+                        Categoría
+                      </h3>
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab('categorias')}
+                        className="text-[10px] font-label-caps uppercase text-primary hover:underline"
+                      >
+                        + Crear nueva
+                      </button>
+                    </div>
 
                     <div>
-                      <label className="block text-xs font-label-caps uppercase text-outline mb-1 font-bold">
-                        Categoría
-                      </label>
                       <select
                         value={category}
                         onChange={(e) => setCategory(e.target.value)}
                         className="w-full p-3 bg-surface-container border border-surface-container-highest rounded-xl text-on-surface text-xs outline-none focus:border-primary cursor-pointer font-bold"
                       >
-                        <option value="LVBP">LVBP</option>
-                        <option value="MLB">Grandes Ligas (MLB)</option>
-                        <option value="Serie del Caribe">Serie del Caribe</option>
-                        <option value="Selección">Selección Vinotinto</option>
-                        <option value="Opinión">Opinión & Análisis</option>
+                        {categories.map((c) => (
+                          <option key={c.id} value={c.name}>
+                            {c.name}
+                          </option>
+                        ))}
                       </select>
                     </div>
 
@@ -1076,22 +1237,45 @@ export default function WordPressAdminPage() {
                       />
                     </div>
 
+                    {/* Image Upload Feature (Like WordPress Media) */}
                     <div>
                       <label className="block text-xs font-label-caps uppercase text-outline mb-1 font-bold">
                         Imagen Destacada
                       </label>
+
+                      {/* File upload button */}
+                      <div className="mb-3">
+                        <label className="w-full flex items-center justify-center gap-2 p-3 bg-surface-container hover:bg-surface-container-highest border border-dashed border-primary/50 rounded-xl cursor-pointer transition-colors text-primary font-label-caps uppercase text-xs font-bold">
+                          <span className="material-symbols-outlined text-[18px]">
+                            {isUploadingImage ? 'sync' : 'upload_file'}
+                          </span>
+                          <span>
+                            {isUploadingImage ? 'Subiendo foto a Supabase...' : '📁 Subir foto desde mi PC'}
+                          </span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleFileUpload}
+                            disabled={isUploadingImage}
+                            className="hidden"
+                          />
+                        </label>
+                      </div>
+
+                      {/* Or paste URL */}
                       <input
                         type="text"
                         value={imageUrl}
                         onChange={(e) => setImageUrl(e.target.value)}
-                        placeholder="https://... o /CARRUSEL/..."
+                        placeholder="https://... o /api/uploads/..."
                         required
                         className="w-full p-3 bg-surface-container border border-surface-container-highest rounded-xl text-on-surface text-xs outline-none focus:border-primary mb-2"
                       />
 
+                      {/* Quick local images */}
                       <div className="space-y-1">
                         <span className="text-[10px] text-outline block font-label-caps uppercase">
-                          Fotos locales predeterminadas:
+                          O elegir foto ya guardada:
                         </span>
                         <div className="flex flex-wrap gap-1">
                           {predefinedImages.map((img) => (
@@ -1119,7 +1303,87 @@ export default function WordPressAdminPage() {
         )}
 
         {/* --------------------------------------------------------- */}
-        {/* TAB 4: USUARIOS Y REDACTORES (ADMIN ONLY) */}
+        {/* TAB 4: CATEGORÍAS */}
+        {/* --------------------------------------------------------- */}
+        {activeTab === 'categorias' && (
+          <div className="space-y-8 max-w-5xl">
+            <div className="pb-4 border-b border-surface-container-highest">
+              <h1 className="font-display-lg text-3xl text-primary font-black uppercase">
+                Categorías de Noticias
+              </h1>
+              <p className="text-secondary text-sm">
+                Crea nuevas secciones para clasificar las notas (ej: LVBP, MLB, Entrevistas, Fichajes).
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+              {/* Form to add category */}
+              <div className="md:col-span-5 bg-surface-container-low border border-surface-container-highest p-6 rounded-3xl shadow-xl">
+                <h3 className="font-headline-sm text-base text-primary font-bold mb-4 flex items-center gap-2">
+                  <span className="material-symbols-outlined text-primary">add_circle</span>
+                  Añadir Nueva Categoría
+                </h3>
+
+                <form onSubmit={handleCreateCategory} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-label-caps uppercase text-outline mb-1 font-bold">
+                      Nombre de la Categoría *
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="ej: Entrevistas Exclusivas"
+                      value={newCategoryName}
+                      onChange={(e) => setNewCategoryName(e.target.value)}
+                      required
+                      className="w-full p-3.5 bg-surface-container border border-surface-container-highest rounded-xl text-on-surface text-xs outline-none focus:border-primary"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={creatingCategory}
+                    className="w-full py-3.5 rounded-xl bg-primary text-on-primary font-label-caps uppercase text-xs font-bold tracking-wider hover:opacity-90 disabled:opacity-50 transition-all shadow-md shadow-primary/20"
+                  >
+                    {creatingCategory ? 'Guardando...' : 'Crear Categoría'}
+                  </button>
+                </form>
+              </div>
+
+              {/* Categories list */}
+              <div className="md:col-span-7 bg-surface-container-low border border-surface-container-highest p-6 rounded-3xl shadow-xl">
+                <h3 className="font-headline-sm text-base text-primary font-bold mb-4">
+                  Categorías Disponibles ({categories.length})
+                </h3>
+
+                <div className="space-y-2">
+                  {categories.map((c) => (
+                    <div
+                      key={c.id}
+                      className="p-3.5 rounded-xl bg-surface-container border border-surface-container-highest flex items-center justify-between"
+                    >
+                      <div>
+                        <span className="text-sm font-bold text-on-surface block">{c.name}</span>
+                        <span className="text-[10px] text-outline font-label-caps">Slug: {c.slug}</span>
+                      </div>
+
+                      {c.name !== 'LVBP' && c.name !== 'Grandes Ligas (MLB)' && (
+                        <button
+                          onClick={() => handleDeleteCategory(c.id, c.name)}
+                          className="px-2.5 py-1 rounded-lg bg-error/10 text-error hover:bg-error/20 text-xs font-label-caps uppercase transition-colors"
+                        >
+                          Eliminar
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* --------------------------------------------------------- */}
+        {/* TAB 5: USUARIOS Y REDACTORES (ADMIN ONLY) */}
         {/* --------------------------------------------------------- */}
         {activeTab === 'usuarios' && currentUser.role === 'admin' && (
           <div className="space-y-8 max-w-6xl">

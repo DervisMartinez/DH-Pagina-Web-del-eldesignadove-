@@ -32,6 +32,7 @@ export interface Noticia {
   category: string;
   author: string;
   image_url: string;
+  external_link?: string | null;
   is_featured: boolean;
   status: 'published' | 'draft';
   views: number;

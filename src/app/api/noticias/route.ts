@@ -13,7 +13,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { id, title, subtitle, content, category, author, image_url, is_featured, status } = body;
+    const { id, title, subtitle, content, category, author, image_url, external_link, is_featured, status } = body;
 
     if (!title || !content || !image_url) {
       return NextResponse.json(
@@ -28,8 +28,8 @@ export async function POST(request: Request) {
     if (id) {
       const res = await pool.query(
         `UPDATE noticias 
-         SET title = $1, subtitle = $2, content = $3, category = $4, author = $5, image_url = $6, is_featured = $7, status = $8
-         WHERE id = $9
+         SET title = $1, subtitle = $2, content = $3, category = $4, author = $5, image_url = $6, external_link = $7, is_featured = $8, status = $9
+         WHERE id = $10
          RETURNING *`,
         [
           title,
@@ -38,6 +38,7 @@ export async function POST(request: Request) {
           category || 'LVBP',
           author || 'Redacción El Designado',
           image_url,
+          external_link || null,
           Boolean(is_featured),
           postStatus,
           id,
@@ -57,8 +58,8 @@ export async function POST(request: Request) {
     const slug = `${baseSlug}-${Date.now().toString().slice(-4)}`;
 
     const res = await pool.query(
-      `INSERT INTO noticias (slug, title, subtitle, content, category, author, image_url, is_featured, status)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+      `INSERT INTO noticias (slug, title, subtitle, content, category, author, image_url, external_link, is_featured, status)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
        RETURNING *`,
       [
         slug,
@@ -68,6 +69,7 @@ export async function POST(request: Request) {
         category || 'LVBP',
         author || 'Redacción El Designado',
         image_url,
+        external_link || null,
         Boolean(is_featured),
         postStatus,
       ]
