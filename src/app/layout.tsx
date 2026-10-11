@@ -54,14 +54,27 @@ import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { RadioProvider } from '@/features/core/providers/RadioContext';
 import { WordPressAdminBar } from '@/components/layout/WordPressAdminBar';
+import { ThemeProvider } from '@/features/core/providers/ThemeContext';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="es"
+      suppressHydrationWarning
       className={`dark ${chivo.variable} ${hankenGrotesk.variable} ${spaceGrotesk.variable} scroll-smooth`}
     >
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                var savedTheme = localStorage.getItem('dh_theme') || 'dark';
+                document.documentElement.classList.remove('light', 'dark');
+                document.documentElement.classList.add(savedTheme);
+              } catch (e) {}
+            `,
+          }}
+        />
         <link
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
           rel="stylesheet"
@@ -72,12 +85,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
-        <WordPressAdminBar />
-        <RadioProvider>
-          <Header />
-          {children}
-          <Footer />
-        </RadioProvider>
+        <ThemeProvider>
+          <WordPressAdminBar />
+          <RadioProvider>
+            <Header />
+            {children}
+            <Footer />
+          </RadioProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

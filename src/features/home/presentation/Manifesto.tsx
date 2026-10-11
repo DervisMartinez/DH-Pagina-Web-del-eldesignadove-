@@ -11,7 +11,7 @@ export function Manifesto() {
               src="/dh-logo.png"
               width={350}
               height={200}
-              className="w-56 md:w-72 h-auto object-contain mb-6 mix-blend-lighten"
+              className="w-56 md:w-72 h-auto object-contain mb-6 mix-blend-lighten logo-theme"
             />
             <span className="font-label-caps text-label-caps text-outline uppercase tracking-widest">
               Manifiesto • Est. 2020

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { ThemeToggle } from './ThemeToggle';
 
 export function Header() {
   const pathname = usePathname();
@@ -28,7 +29,7 @@ export function Header() {
                 src="/dh-logo.png"
                 width={200}
                 height={64}
-                className="h-16 w-auto object-contain mix-blend-lighten"
+                className="h-16 w-auto object-contain mix-blend-lighten logo-theme"
               />
             </Link>
           </div>
@@ -100,7 +101,8 @@ export function Header() {
               Contacto
             </Link>
           </nav>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 md:gap-3">
+            <ThemeToggle />
             <a
               href="https://instagram.com/eldesignadove"
               target="_blank"
@@ -203,6 +205,9 @@ export function Header() {
           >
             Contacto
           </Link>
+          <div className="pt-4 mt-2 border-t border-surface-container-highest flex flex-col items-center">
+            <ThemeToggle showLabel className="w-full py-3.5 justify-center" />
+          </div>
         </nav>
       </div>
     </>

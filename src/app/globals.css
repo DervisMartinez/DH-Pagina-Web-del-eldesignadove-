@@ -168,3 +168,55 @@ body.has-wp-admin-bar {
 body.has-wp-admin-bar header {
   top: 2rem !important;
 }
+
+/* ------------------------------------------------------------- */
+/* MODO CLARO (LIGHT THEME)                                      */
+/* ------------------------------------------------------------- */
+html.light {
+  --color-background: #f4f5f8;
+  --color-surface: #ffffff;
+  --color-surface-dim: #eaedf1;
+  --color-surface-bright: #ffffff;
+  --color-surface-container-lowest: #ffffff;
+  --color-surface-container-low: #ffffff;
+  --color-surface-container: #f0f2f5;
+  --color-surface-container-high: #e5e8ec;
+  --color-surface-container-highest: #d9dde3;
+  --color-surface-variant: #e5e8ec;
+
+  --color-on-background: #111315;
+  --color-on-surface: #111315;
+  --color-on-surface-variant: #475467;
+  --color-secondary: #475467;
+  --color-outline: #cbd5e1;
+  --color-outline-variant: #e2e8f0;
+
+  --color-primary: #101828;
+  --color-on-primary: #ffffff;
+  --color-tertiary: #101828;
+  --color-on-tertiary: #ffffff;
+  --color-primary-container: #101828;
+  --color-on-primary-container: #ffffff;
+  --color-secondary-container: #e2e8f0;
+  --color-on-secondary-container: #1e293b;
+  --color-tertiary-container: #e2e8f0;
+  --color-inverse-surface: #101828;
+  --color-inverse-on-surface: #ffffff;
+
+  color-scheme: light;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+/* Invertir logotipo de fondo negro a blanco en modo claro */
+html.light .logo-theme {
+  filter: invert(1);
+  mix-blend-mode: multiply;
+}
+
+/* Transición suave al alternar modo claro y oscuro */
+body {
+  transition: background-color 0.2s ease, color 0.2s ease;
+}

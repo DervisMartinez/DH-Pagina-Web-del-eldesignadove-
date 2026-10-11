@@ -23,7 +23,7 @@ export function Footer() {
                 src="/dh-logo.png"
                 width={200}
                 height={64}
-                className="h-16 w-auto object-contain mix-blend-lighten"
+                className="h-16 w-auto object-contain mix-blend-lighten logo-theme"
               />
             </div>
             <p className="font-body-sm text-body-sm text-on-surface-variant">
