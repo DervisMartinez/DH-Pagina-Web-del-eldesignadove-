@@ -160,3 +160,11 @@
     display: none;
   }
 }
+
+body.has-wp-admin-bar {
+  padding-top: 2rem;
+}
+
+body.has-wp-admin-bar header {
+  top: 2rem !important;
+}

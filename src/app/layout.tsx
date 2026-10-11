@@ -53,6 +53,7 @@ export const metadata: Metadata = {
 import { Header } from '@/components/layout/Header';
 import { Footer } from '@/components/layout/Footer';
 import { RadioProvider } from '@/features/core/providers/RadioContext';
+import { WordPressAdminBar } from '@/components/layout/WordPressAdminBar';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -71,6 +72,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
+        <WordPressAdminBar />
         <RadioProvider>
           <Header />
           {children}
