@@ -124,34 +124,34 @@ export function HeroCarousel() {
               <div className="absolute inset-0 bg-gradient-to-t from-background via-background/60 to-transparent" />
               <div className="absolute inset-0 bg-gradient-to-r from-background/95 via-background/40 to-transparent" />
 
-              <div className="absolute inset-0 flex flex-col justify-end pt-20 p-6 pb-24 md:pb-16 md:p-14 max-w-4xl">
-                <div className="flex flex-wrap items-center gap-2 mb-3">
-                  <span className="px-3.5 py-1 bg-primary text-on-primary rounded-full font-label-caps text-[10px] md:text-xs uppercase font-bold tracking-wider shadow-md">
+              <div className="absolute inset-0 flex flex-col justify-end pt-20 p-4 sm:p-6 pb-20 sm:pb-24 md:pb-16 md:p-14 max-w-4xl">
+                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mb-2 sm:mb-3">
+                  <span className="px-2.5 py-0.5 sm:px-3.5 sm:py-1 bg-primary text-on-primary rounded-full font-label-caps text-[9px] sm:text-[10px] md:text-xs uppercase font-bold tracking-wider shadow-md">
                     {slide.tag}
                   </span>
-                  <span className="px-3 py-1 bg-surface-container-highest/80 backdrop-blur-md rounded-full font-label-caps text-[10px] md:text-xs text-primary uppercase font-bold">
+                  <span className="px-2.5 py-0.5 sm:px-3.5 sm:py-1 bg-surface-container-highest/80 backdrop-blur-md rounded-full font-label-caps text-[9px] sm:text-[10px] md:text-xs text-primary uppercase font-bold">
                     {slide.category}
                   </span>
                 </div>
 
-                <h1 className="font-display-lg text-[30px] sm:text-[42px] md:text-[56px] text-primary tracking-tight uppercase mb-3 leading-[1.05] line-clamp-3">
+                <h1 className="font-display-lg text-[22px] xs:text-[26px] sm:text-[38px] md:text-[54px] text-primary tracking-tight uppercase mb-2 sm:mb-3 leading-[1.08] line-clamp-3 break-words">
                   {slide.title}
                 </h1>
 
                 {slide.subtitle && (
-                  <p className="font-body-lead text-secondary text-sm md:text-base max-w-2xl mb-6 line-clamp-2 hidden sm:block">
+                  <p className="font-body-lead text-secondary text-xs sm:text-sm md:text-base max-w-2xl mb-4 sm:mb-6 line-clamp-2 hidden xs:block">
                     {slide.subtitle}
                   </p>
                 )}
 
                 {slide.link && (
-                  <div>
+                  <div className="mt-1">
                     <Link
                       href={slide.link}
-                      className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-on-primary font-label-caps uppercase text-xs font-bold tracking-wider hover:opacity-90 transition-opacity shadow-lg shadow-primary/20"
+                      className="inline-flex items-center gap-1.5 sm:gap-2 px-4 py-2 sm:px-6 sm:py-3 rounded-xl bg-primary text-on-primary font-label-caps uppercase text-[10px] sm:text-xs font-bold tracking-wider hover:opacity-90 transition-opacity shadow-lg shadow-primary/20"
                     >
-                      <span>Leer Reportaje Completo</span>
-                      <span className="material-symbols-outlined text-[16px]">arrow_forward</span>
+                      <span>Leer Reportaje</span>
+                      <span className="material-symbols-outlined text-[14px] sm:text-[16px]">arrow_forward</span>
                     </Link>
                   </div>
                 )}
@@ -160,25 +160,25 @@ export function HeroCarousel() {
           ))}
 
           {/* Navigation Controls */}
-          <div className="absolute bottom-6 right-6 md:bottom-12 md:right-12 z-20 flex items-center gap-4 bg-surface-dim/80 backdrop-blur-xl px-5 py-3 rounded-full border border-surface-container-highest">
-            <span className="font-stat-numeric text-stat-numeric text-primary tracking-wider font-bold">
+          <div className="absolute bottom-3 right-3 sm:bottom-6 sm:right-6 md:bottom-12 md:right-12 z-20 flex items-center gap-2 sm:gap-4 bg-surface-dim/85 backdrop-blur-xl px-3 py-1.5 sm:px-5 sm:py-3 rounded-full border border-surface-container-highest shadow-xl">
+            <span className="font-stat-numeric text-xs sm:text-stat-numeric text-primary tracking-wider font-bold">
               {String(currentIndex + 1).padStart(2, '0')} / {String(slides.length).padStart(2, '0')}
             </span>
-            <div className="h-4 w-[1px] bg-outline-variant" />
-            <div className="flex items-center gap-2">
+            <div className="h-3 sm:h-4 w-[1px] bg-outline-variant" />
+            <div className="flex items-center gap-1 sm:gap-2">
               <button
                 aria-label="Anterior"
                 onClick={prevSlide}
-                className="w-9 h-9 rounded-full bg-surface-container flex items-center justify-center text-primary hover:bg-surface-container-highest transition-colors"
+                className="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-surface-container flex items-center justify-center text-primary hover:bg-surface-container-highest transition-colors"
               >
-                <span className="material-symbols-outlined text-[20px]">chevron_left</span>
+                <span className="material-symbols-outlined text-[16px] sm:text-[20px]">chevron_left</span>
               </button>
               <button
                 aria-label="Siguiente"
                 onClick={nextSlide}
-                className="w-9 h-9 rounded-full bg-surface-container flex items-center justify-center text-primary hover:bg-surface-container-highest transition-colors"
+                className="w-7 h-7 sm:w-9 sm:h-9 rounded-full bg-surface-container flex items-center justify-center text-primary hover:bg-surface-container-highest transition-colors"
               >
-                <span className="material-symbols-outlined text-[20px]">chevron_right</span>
+                <span className="material-symbols-outlined text-[16px] sm:text-[20px]">chevron_right</span>
               </button>
             </div>
           </div>

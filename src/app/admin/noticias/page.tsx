@@ -551,10 +551,10 @@ export default function WordPressAdminPage() {
           </div>
 
           {/* Sidebar Nav Items */}
-          <nav className="p-3 space-y-1">
+          <nav className="p-2 md:p-3 flex md:flex-col overflow-x-auto gap-1.5 md:gap-0 md:space-y-1 hide-scrollbar">
             <button
               onClick={() => setActiveTab('escritorio')}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-label-caps uppercase tracking-wider transition-all ${
+              className={`flex items-center gap-2 md:gap-3 px-3.5 md:px-4 py-2.5 md:py-3 rounded-xl text-xs font-label-caps uppercase tracking-wider whitespace-nowrap shrink-0 transition-all ${
                 activeTab === 'escritorio'
                   ? 'bg-primary text-on-primary font-bold shadow-md'
                   : 'text-secondary hover:text-primary hover:bg-surface-container'
@@ -566,13 +566,13 @@ export default function WordPressAdminPage() {
 
             <button
               onClick={() => setActiveTab('entradas')}
-              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-label-caps uppercase tracking-wider transition-all ${
+              className={`flex items-center justify-between gap-2 md:gap-3 px-3.5 md:px-4 py-2.5 md:py-3 rounded-xl text-xs font-label-caps uppercase tracking-wider whitespace-nowrap shrink-0 transition-all ${
                 activeTab === 'entradas'
                   ? 'bg-primary text-on-primary font-bold shadow-md'
                   : 'text-secondary hover:text-primary hover:bg-surface-container'
               }`}
             >
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 md:gap-3">
                 <span className="material-symbols-outlined text-[18px]">article</span>
                 Entradas
               </div>
@@ -583,7 +583,7 @@ export default function WordPressAdminPage() {
 
             <button
               onClick={startNewPost}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-xs font-label-caps uppercase tracking-wider transition-all ${
+              className={`flex items-center gap-2 md:gap-3 px-3.5 md:px-4 py-2.5 md:py-3 rounded-xl text-xs font-label-caps uppercase tracking-wider whitespace-nowrap shrink-0 transition-all ${
                 activeTab === 'editor' && !editingId
                   ? 'bg-primary text-on-primary font-bold shadow-md'
                   : 'text-secondary hover:text-primary hover:bg-surface-container'
@@ -595,13 +595,13 @@ export default function WordPressAdminPage() {
 
             <button
               onClick={() => setActiveTab('categorias')}
-              className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-label-caps uppercase tracking-wider transition-all ${
+              className={`flex items-center justify-between gap-2 md:gap-3 px-3.5 md:px-4 py-2.5 md:py-3 rounded-xl text-xs font-label-caps uppercase tracking-wider whitespace-nowrap shrink-0 transition-all ${
                 activeTab === 'categorias'
                   ? 'bg-primary text-on-primary font-bold shadow-md'
                   : 'text-secondary hover:text-primary hover:bg-surface-container'
               }`}
             >
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 md:gap-3">
                 <span className="material-symbols-outlined text-[18px]">label</span>
                 Categorías
               </div>
@@ -613,13 +613,13 @@ export default function WordPressAdminPage() {
             {currentUser.role === 'admin' && (
               <button
                 onClick={() => setActiveTab('usuarios')}
-                className={`w-full flex items-center justify-between px-4 py-3 rounded-xl text-xs font-label-caps uppercase tracking-wider transition-all ${
+                className={`flex items-center justify-between gap-2 md:gap-3 px-3.5 md:px-4 py-2.5 md:py-3 rounded-xl text-xs font-label-caps uppercase tracking-wider whitespace-nowrap shrink-0 transition-all ${
                   activeTab === 'usuarios'
                     ? 'bg-primary text-on-primary font-bold shadow-md'
                     : 'text-secondary hover:text-primary hover:bg-surface-container'
                 }`}
               >
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 md:gap-3">
                   <span className="material-symbols-outlined text-[18px]">group</span>
                   Redactores & Usuarios
                 </div>
