@@ -9,6 +9,11 @@ export function Header() {
   const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  // No renderizar la cabecera publica dentro del panel de administracion
+  if (pathname.startsWith('/admin')) {
+    return null;
+  }
+
   const toggleMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
   const closeMenu = () => setIsMobileMenuOpen(false);
 

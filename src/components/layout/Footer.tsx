@@ -1,7 +1,17 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 export function Footer() {
+  const pathname = usePathname();
+
+  // No renderizar el pie de pagina publico dentro del panel de administracion
+  if (pathname.startsWith('/admin')) {
+    return null;
+  }
+
   return (
     <footer className="w-full bg-surface-container-lowest py-section-gap-sm">
       <div className="max-w-[1280px] mx-auto px-margin-mobile md:px-margin-desktop">

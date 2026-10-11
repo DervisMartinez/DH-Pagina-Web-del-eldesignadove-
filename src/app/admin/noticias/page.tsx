@@ -655,7 +655,7 @@ export default function WordPressAdminPage() {
               onClick={() => setActiveTab('escritorio')}
               className={`flex items-center gap-2 md:gap-3 px-3.5 md:px-4 py-2.5 md:py-3 rounded-xl text-xs font-label-caps uppercase tracking-wider whitespace-nowrap shrink-0 transition-all ${
                 activeTab === 'escritorio'
-                  ? 'bg-primary text-on-primary font-bold shadow-md'
+                  ? 'bg-primary text-black font-bold shadow-md'
                   : 'text-secondary hover:text-primary hover:bg-surface-container'
               }`}
             >
@@ -667,7 +667,7 @@ export default function WordPressAdminPage() {
               onClick={() => setActiveTab('entradas')}
               className={`flex items-center justify-between gap-2 md:gap-3 px-3.5 md:px-4 py-2.5 md:py-3 rounded-xl text-xs font-label-caps uppercase tracking-wider whitespace-nowrap shrink-0 transition-all ${
                 activeTab === 'entradas'
-                  ? 'bg-primary text-on-primary font-bold shadow-md'
+                  ? 'bg-primary text-black font-bold shadow-md'
                   : 'text-secondary hover:text-primary hover:bg-surface-container'
               }`}
             >
@@ -684,7 +684,7 @@ export default function WordPressAdminPage() {
               onClick={startNewPost}
               className={`flex items-center gap-2 md:gap-3 px-3.5 md:px-4 py-2.5 md:py-3 rounded-xl text-xs font-label-caps uppercase tracking-wider whitespace-nowrap shrink-0 transition-all ${
                 activeTab === 'editor' && !editingId
-                  ? 'bg-primary text-on-primary font-bold shadow-md'
+                  ? 'bg-primary text-black font-bold shadow-md'
                   : 'text-secondary hover:text-primary hover:bg-surface-container'
               }`}
             >
@@ -696,7 +696,7 @@ export default function WordPressAdminPage() {
               onClick={() => setActiveTab('categorias')}
               className={`flex items-center justify-between gap-2 md:gap-3 px-3.5 md:px-4 py-2.5 md:py-3 rounded-xl text-xs font-label-caps uppercase tracking-wider whitespace-nowrap shrink-0 transition-all ${
                 activeTab === 'categorias'
-                  ? 'bg-primary text-on-primary font-bold shadow-md'
+                  ? 'bg-primary text-black font-bold shadow-md'
                   : 'text-secondary hover:text-primary hover:bg-surface-container'
               }`}
             >
@@ -713,7 +713,7 @@ export default function WordPressAdminPage() {
               onClick={() => setActiveTab('posiciones')}
               className={`flex items-center gap-2 md:gap-3 px-3.5 md:px-4 py-2.5 md:py-3 rounded-xl text-xs font-label-caps uppercase tracking-wider whitespace-nowrap shrink-0 transition-all ${
                 activeTab === 'posiciones'
-                  ? 'bg-primary text-on-primary font-bold shadow-md'
+                  ? 'bg-primary text-black font-bold shadow-md'
                   : 'text-secondary hover:text-primary hover:bg-surface-container'
               }`}
             >
@@ -726,7 +726,7 @@ export default function WordPressAdminPage() {
                 onClick={() => setActiveTab('usuarios')}
                 className={`flex items-center justify-between gap-2 md:gap-3 px-3.5 md:px-4 py-2.5 md:py-3 rounded-xl text-xs font-label-caps uppercase tracking-wider whitespace-nowrap shrink-0 transition-all ${
                   activeTab === 'usuarios'
-                    ? 'bg-primary text-on-primary font-bold shadow-md'
+                    ? 'bg-primary text-black font-bold shadow-md'
                     : 'text-secondary hover:text-primary hover:bg-surface-container'
                 }`}
               >
@@ -807,7 +807,7 @@ export default function WordPressAdminPage() {
 
               <button
                 onClick={startNewPost}
-                className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-primary text-on-primary font-label-caps uppercase text-xs font-bold tracking-wider hover:opacity-90 shadow-lg shadow-primary/20"
+                className="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-primary text-black font-label-caps uppercase text-xs font-black tracking-wider hover:opacity-90 shadow-lg shadow-primary/20 transition-all"
               >
                 <span className="material-symbols-outlined text-[18px]">edit_note</span>
                 Redactar Nueva Entrada
@@ -977,7 +977,7 @@ export default function WordPressAdminPage() {
 
               <button
                 onClick={startNewPost}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-on-primary font-label-caps uppercase text-xs font-bold tracking-wider hover:opacity-90 shadow-lg shadow-primary/20"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-black font-label-caps uppercase text-xs font-black tracking-wider hover:opacity-90 shadow-lg shadow-primary/20 transition-all"
               >
                 <span className="material-symbols-outlined text-[18px]">add</span>
                 Añadir Nueva
@@ -1289,7 +1289,7 @@ export default function WordPressAdminPage() {
                         type="submit"
                         disabled={isSubmitting}
                         onClick={() => setPostStatus('published')}
-                        className="w-full py-3.5 rounded-xl bg-primary text-on-primary font-label-caps uppercase text-xs font-bold tracking-widest hover:opacity-90 disabled:opacity-50 transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
+                        className="w-full py-3.5 rounded-xl bg-primary text-black font-label-caps uppercase text-xs font-black tracking-widest hover:opacity-90 disabled:opacity-50 transition-all shadow-lg shadow-primary/20 flex items-center justify-center gap-2"
                       >
                         <span className="material-symbols-outlined text-[16px]">check_circle</span>
                         {editingId ? 'Actualizar Entrada' : 'Publicar Ahora'}
@@ -1775,7 +1775,7 @@ export default function WordPressAdminPage() {
                 <button
                   onClick={handleSaveStandings}
                   disabled={savingStandings}
-                  className="px-6 py-2.5 rounded-xl bg-primary text-on-primary font-label-caps uppercase text-xs font-bold tracking-wider hover:opacity-90 disabled:opacity-50 transition-all shadow-md shadow-primary/20 flex items-center gap-2"
+                  className="px-6 py-2.5 rounded-xl bg-primary text-black font-label-caps uppercase text-xs font-black tracking-wider hover:opacity-90 disabled:opacity-50 transition-all shadow-md shadow-primary/20 flex items-center gap-2"
                 >
                   <span className="material-symbols-outlined text-[16px]">save</span>
                   {savingStandings ? 'Guardando en Supabase...' : 'Guardar Cambios'}
