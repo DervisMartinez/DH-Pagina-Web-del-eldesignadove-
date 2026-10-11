@@ -31,7 +31,7 @@ export function StandingsTable() {
   const [data, setData] = useState<Record<string, TeamStanding[]>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('Temporada Regular');
-  const [selectedYear, setSelectedYear] = useState('2024-2025');
+  const [selectedYear, setSelectedYear] = useState('2026-2027');
 
   const tabs = ['Temporada Regular', 'Series Particulares', 'Play Offs / Comodín', 'Round Robin', 'Final'];
 
@@ -48,12 +48,11 @@ export function StandingsTable() {
   };
 
   useEffect(() => {
-    // Para simplificar, la API siempre devuelve los datos de la última temporada.
-    // Cuando conectemos Supabase, le pasaremos el año al endpoint (?year=2024-2025)
-    fetch('/api/lvbp-standings')
+    setIsLoading(true);
+    fetch(`/api/lvbp-standings?season=${selectedYear}`)
       .then((res) => res.json())
       .then((json) => {
-        setData(json.standings);
+        setData(json.standings || {});
         setIsLoading(false);
       })
       .catch((err) => {
@@ -68,16 +67,23 @@ export function StandingsTable() {
     <div className="w-full max-w-6xl mx-auto bg-surface-container-low rounded-2xl shadow-2xl overflow-hidden border border-surface-container-highest">
       <div className="p-6 md:p-8 bg-surface-container">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-          <h2 className="font-headline-lg text-[24px] md:text-headline-lg text-primary font-bold tracking-tight">
-            Posiciones LVBP
-          </h2>
+          <div className="flex items-center gap-3">
+            <h2 className="font-headline-lg text-[24px] md:text-headline-lg text-primary font-bold tracking-tight">
+              Posiciones LVBP
+            </h2>
+            {selectedYear === '2026-2027' && (
+              <span className="px-2.5 py-1 rounded-full bg-green-500/10 border border-green-500/30 text-green-400 font-label-caps text-[10px] uppercase font-bold tracking-wider">
+                Nueva Campaña
+              </span>
+            )}
+          </div>
           <select 
             value={selectedYear}
             onChange={(e) => setSelectedYear(e.target.value)}
-            className="bg-surface-container border border-outline-variant text-on-surface text-sm rounded-lg focus:ring-primary focus:border-primary p-2 outline-none cursor-pointer"
+            className="bg-surface-container border border-outline-variant text-on-surface text-sm rounded-lg focus:ring-primary focus:border-primary p-2 outline-none cursor-pointer font-bold"
           >
+            <option value="2026-2027">2026 - 2027 (En Curso)</option>
             <option value="2024-2025">2024 - 2025</option>
-            {/* <option value="2025-2026">2025 - 2026</option> */}
           </select>
         </div>
         

@@ -49,11 +49,18 @@ export default function WordPressAdminPage() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
   // Active navigation tab
-  const [activeTab, setActiveTab] = useState<'escritorio' | 'entradas' | 'editor' | 'categorias' | 'usuarios'>('escritorio');
+  const [activeTab, setActiveTab] = useState<'escritorio' | 'entradas' | 'editor' | 'categorias' | 'posiciones' | 'usuarios'>('escritorio');
 
   // Filter in Entradas tab
   const [statusFilter, setStatusFilter] = useState<'all' | 'published' | 'draft'>('all');
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Standings editor state
+  const [standingsSeason, setStandingsSeason] = useState('2026-2027');
+  const [standingsStage, setStandingsStage] = useState('Temporada Regular');
+  const [standingsList, setStandingsList] = useState<any[]>([]);
+  const [loadingStandings, setLoadingStandings] = useState(false);
+  const [savingStandings, setSavingStandings] = useState(false);
 
   // Articles state
   const [articles, setArticles] = useState<NoticiaItem[]>([]);
@@ -200,6 +207,98 @@ export default function WordPressAdminPage() {
     } finally {
       setLoadingUsers(false);
     }
+  };
+
+  const fetchAdminStandings = async (season: string, stage: string) => {
+    setLoadingStandings(true);
+    try {
+      const res = await fetch(`/api/lvbp-standings?season=${season}`);
+      const json = await res.json();
+      if (json.standings && json.standings[stage]) {
+        setStandingsList(json.standings[stage]);
+      } else {
+        setStandingsList([]);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingStandings(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'posiciones') {
+      fetchAdminStandings(standingsSeason, standingsStage);
+    }
+  }, [activeTab, standingsSeason, standingsStage]);
+
+  const updateTeamField = (index: number, field: string, value: any) => {
+    const updated = [...standingsList];
+    updated[index] = { ...updated[index], [field]: value };
+
+    // Auto compute AVE
+    if (field === 'jg' || field === 'jj') {
+      const jg = field === 'jg' ? Number(value) : Number(updated[index].jg || 0);
+      const jj = field === 'jj' ? Number(value) : Number(updated[index].jj || 0);
+      if (jj > 0) {
+        updated[index].ave = (jg / jj).toFixed(3).replace(/^0/, '');
+      } else {
+        updated[index].ave = '.000';
+      }
+    }
+
+    // Auto compute CA-CP
+    if (field === 'ca' || field === 'cp') {
+      const ca = field === 'ca' ? Number(value) : Number(updated[index].ca || 0);
+      const cp = field === 'cp' ? Number(value) : Number(updated[index].cp || 0);
+      updated[index].cacp = ca - cp;
+    }
+
+    setStandingsList(updated);
+  };
+
+  const handleSaveStandings = async () => {
+    setSavingStandings(true);
+    setFeedback(null);
+    try {
+      const res = await fetch('/api/lvbp-standings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          season: standingsSeason,
+          stage: standingsStage,
+          data: standingsList,
+        }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || 'Error al guardar');
+      setFeedback({ text: '¡Posiciones LVBP guardadas y actualizadas en tiempo real en la web!', type: 'success' });
+    } catch (err: any) {
+      setFeedback({ text: err.message, type: 'error' });
+    } finally {
+      setSavingStandings(false);
+    }
+  };
+
+  const handleResetToZero = () => {
+    if (!confirm('¿Deseas reiniciar todos los valores a 0 para el inicio de la temporada?')) return;
+    const reset = standingsList.map((t) => ({
+      ...t,
+      jj: 0,
+      jg: 0,
+      jp: 0,
+      ave: '.000',
+      dif: '0',
+      racha: '-',
+      ult10: '0 - 0',
+      casa: '0 - 0',
+      ruta: '0 - 0',
+      ca: 0,
+      cp: 0,
+      cacp: 0,
+      status: '',
+    }));
+    setStandingsList(reset);
   };
 
   // Upload image file directly from PC
@@ -608,6 +707,18 @@ export default function WordPressAdminPage() {
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-surface-container-highest text-secondary font-bold">
                 {categories.length}
               </span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('posiciones')}
+              className={`flex items-center gap-2 md:gap-3 px-3.5 md:px-4 py-2.5 md:py-3 rounded-xl text-xs font-label-caps uppercase tracking-wider whitespace-nowrap shrink-0 transition-all ${
+                activeTab === 'posiciones'
+                  ? 'bg-primary text-on-primary font-bold shadow-md'
+                  : 'text-secondary hover:text-primary hover:bg-surface-container'
+              }`}
+            >
+              <span className="material-symbols-outlined text-[18px]">sports_baseball</span>
+              Posiciones LVBP
             </button>
 
             {currentUser.role === 'admin' && (
@@ -1377,6 +1488,298 @@ export default function WordPressAdminPage() {
                     </div>
                   ))}
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* --------------------------------------------------------- */}
+        {/* TAB 5: POSICIONES LVBP (EDITOR EN TIEMPO REAL) */}
+        {/* --------------------------------------------------------- */}
+        {activeTab === 'posiciones' && (
+          <div className="space-y-8 max-w-6xl">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-surface-container-highest">
+              <div>
+                <h1 className="font-display-lg text-3xl text-primary font-black uppercase">
+                  Editor de Posiciones LVBP
+                </h1>
+                <p className="text-secondary text-sm">
+                  Edita y guarda los récords, ganados, perdidos y estadísticas de los 8 equipos en Supabase.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/lvbp"
+                  target="_blank"
+                  className="px-4 py-2.5 rounded-xl bg-surface-container text-xs font-label-caps uppercase text-secondary hover:text-primary transition-colors border border-surface-container-highest"
+                >
+                  Ver Tabla Pública ↗
+                </Link>
+                <button
+                  onClick={handleSaveStandings}
+                  disabled={savingStandings}
+                  className="px-5 py-2.5 rounded-xl bg-primary text-on-primary font-label-caps uppercase text-xs font-bold tracking-wider hover:opacity-90 disabled:opacity-50 transition-all shadow-lg shadow-primary/20 flex items-center gap-2"
+                >
+                  <span className="material-symbols-outlined text-[16px]">save</span>
+                  {savingStandings ? 'Guardando...' : 'Guardar Posiciones'}
+                </button>
+              </div>
+            </div>
+
+            {/* Selector bar */}
+            <div className="p-4 rounded-2xl bg-surface-container-low border border-surface-container-highest flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
+              <div className="flex flex-wrap items-center gap-4">
+                <div>
+                  <label className="block text-[10px] font-label-caps uppercase text-outline mb-1 font-bold">
+                    Temporada:
+                  </label>
+                  <select
+                    value={standingsSeason}
+                    onChange={(e) => setStandingsSeason(e.target.value)}
+                    className="p-2.5 bg-surface-container border border-surface-container-highest rounded-xl text-xs text-on-surface font-bold outline-none focus:border-primary cursor-pointer"
+                  >
+                    <option value="2026-2027">⚾ 2026 - 2027 (Campaña Actual)</option>
+                    <option value="2024-2025">🏛️ 2024 - 2025 (Histórica)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-label-caps uppercase text-outline mb-1 font-bold">
+                    Etapa del Torneo:
+                  </label>
+                  <select
+                    value={standingsStage}
+                    onChange={(e) => setStandingsStage(e.target.value)}
+                    className="p-2.5 bg-surface-container border border-surface-container-highest rounded-xl text-xs text-on-surface font-bold outline-none focus:border-primary cursor-pointer"
+                  >
+                    <option value="Temporada Regular">Temporada Regular</option>
+                    <option value="Round Robin">Round Robin</option>
+                    <option value="Play Offs / Comodín">Play Offs / Comodín</option>
+                    <option value="Final">Final</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleResetToZero}
+                  className="px-3.5 py-2 rounded-xl bg-surface-container text-amber-400 border border-amber-500/30 text-xs font-label-caps uppercase font-bold hover:bg-amber-500/10 transition-colors flex items-center gap-1.5"
+                >
+                  <span className="material-symbols-outlined text-[16px]">restart_alt</span>
+                  Poner todos en 0
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => fetchAdminStandings(standingsSeason, standingsStage)}
+                  className="px-3.5 py-2 rounded-xl bg-surface-container text-secondary hover:text-primary text-xs font-label-caps uppercase font-bold transition-colors flex items-center gap-1.5"
+                >
+                  <span className="material-symbols-outlined text-[16px]">refresh</span>
+                  Recargar
+                </button>
+              </div>
+            </div>
+
+            {/* Standings Editable Table */}
+            <div className="bg-surface-container-low border border-surface-container-highest rounded-3xl overflow-hidden shadow-xl">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr className="border-b border-surface-container-highest bg-surface-container text-outline font-label-caps uppercase tracking-wider text-[11px]">
+                      <th className="p-3 font-bold sticky left-0 bg-surface-container z-10">Equipo</th>
+                      <th className="p-2 font-bold text-center">Status</th>
+                      <th className="p-2 font-bold text-center">JJ</th>
+                      <th className="p-2 font-bold text-center">JG</th>
+                      <th className="p-2 font-bold text-center">JP</th>
+                      <th className="p-2 font-bold text-center">AVE</th>
+                      <th className="p-2 font-bold text-center">DIF</th>
+                      <th className="p-2 font-bold text-center">RACHA</th>
+                      <th className="p-2 font-bold text-center">ULT-10</th>
+                      <th className="p-2 font-bold text-center">CASA</th>
+                      <th className="p-2 font-bold text-center">RUTA</th>
+                      <th className="p-2 font-bold text-center">CA</th>
+                      <th className="p-2 font-bold text-center">CP</th>
+                      <th className="p-2 font-bold text-center">CA-CP</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-surface-container-highest">
+                    {loadingStandings ? (
+                      <tr>
+                        <td colSpan={14} className="p-12 text-center text-secondary animate-pulse">
+                          Cargando tabla de posiciones desde Supabase...
+                        </td>
+                      </tr>
+                    ) : standingsList.length === 0 ? (
+                      <tr>
+                        <td colSpan={14} className="p-12 text-center text-secondary">
+                          No hay equipos registrados para esta etapa. Puedes cambiar de etapa o temporada arriba.
+                        </td>
+                      </tr>
+                    ) : (
+                      standingsList.map((team, idx) => (
+                        <tr key={team.id || idx} className="hover:bg-surface-container/60 transition-colors">
+                          <td className="p-3 font-bold text-on-surface whitespace-nowrap sticky left-0 bg-surface-container-low z-10 border-r border-surface-container-highest">
+                            <span className="text-primary font-bold mr-2 text-[11px]">{team.code}</span>
+                            {team.team}
+                          </td>
+
+                          {/* Status (*, #, ++) */}
+                          <td className="p-1.5 text-center">
+                            <input
+                              type="text"
+                              value={team.status || ''}
+                              onChange={(e) => updateTeamField(idx, 'status', e.target.value)}
+                              placeholder="* / #"
+                              className="w-12 p-1.5 bg-surface-container border border-surface-container-highest rounded-lg text-center text-xs text-primary font-bold outline-none focus:border-primary"
+                            />
+                          </td>
+
+                          {/* JJ */}
+                          <td className="p-1.5 text-center">
+                            <input
+                              type="number"
+                              value={team.jj ?? 0}
+                              onChange={(e) => updateTeamField(idx, 'jj', e.target.value)}
+                              className="w-12 p-1.5 bg-surface-container border border-surface-container-highest rounded-lg text-center text-xs text-on-surface outline-none focus:border-primary"
+                            />
+                          </td>
+
+                          {/* JG */}
+                          <td className="p-1.5 text-center">
+                            <input
+                              type="number"
+                              value={team.jg ?? 0}
+                              onChange={(e) => updateTeamField(idx, 'jg', e.target.value)}
+                              className="w-12 p-1.5 bg-surface-container border border-green-500/30 rounded-lg text-center text-xs text-green-400 font-bold outline-none focus:border-green-400"
+                            />
+                          </td>
+
+                          {/* JP */}
+                          <td className="p-1.5 text-center">
+                            <input
+                              type="number"
+                              value={team.jp ?? 0}
+                              onChange={(e) => updateTeamField(idx, 'jp', e.target.value)}
+                              className="w-12 p-1.5 bg-surface-container border border-red-500/30 rounded-lg text-center text-xs text-red-400 font-bold outline-none focus:border-red-400"
+                            />
+                          </td>
+
+                          {/* AVE */}
+                          <td className="p-1.5 text-center">
+                            <input
+                              type="text"
+                              value={team.ave || '.000'}
+                              onChange={(e) => updateTeamField(idx, 'ave', e.target.value)}
+                              className="w-16 p-1.5 bg-surface-container border border-surface-container-highest rounded-lg text-center text-xs text-primary font-bold outline-none focus:border-primary"
+                            />
+                          </td>
+
+                          {/* DIF */}
+                          <td className="p-1.5 text-center">
+                            <input
+                              type="text"
+                              value={team.dif ?? '0'}
+                              onChange={(e) => updateTeamField(idx, 'dif', e.target.value)}
+                              className="w-12 p-1.5 bg-surface-container border border-surface-container-highest rounded-lg text-center text-xs text-on-surface outline-none focus:border-primary"
+                            />
+                          </td>
+
+                          {/* RACHA */}
+                          <td className="p-1.5 text-center">
+                            <input
+                              type="text"
+                              value={team.racha || '-'}
+                              onChange={(e) => updateTeamField(idx, 'racha', e.target.value)}
+                              className="w-14 p-1.5 bg-surface-container border border-surface-container-highest rounded-lg text-center text-xs text-secondary outline-none focus:border-primary"
+                            />
+                          </td>
+
+                          {/* ULT-10 */}
+                          <td className="p-1.5 text-center">
+                            <input
+                              type="text"
+                              value={team.ult10 || '0 - 0'}
+                              onChange={(e) => updateTeamField(idx, 'ult10', e.target.value)}
+                              className="w-16 p-1.5 bg-surface-container border border-surface-container-highest rounded-lg text-center text-xs text-secondary outline-none focus:border-primary"
+                            />
+                          </td>
+
+                          {/* CASA */}
+                          <td className="p-1.5 text-center">
+                            <input
+                              type="text"
+                              value={team.casa || '0 - 0'}
+                              onChange={(e) => updateTeamField(idx, 'casa', e.target.value)}
+                              className="w-16 p-1.5 bg-surface-container border border-surface-container-highest rounded-lg text-center text-xs text-secondary outline-none focus:border-primary"
+                            />
+                          </td>
+
+                          {/* RUTA */}
+                          <td className="p-1.5 text-center">
+                            <input
+                              type="text"
+                              value={team.ruta || '0 - 0'}
+                              onChange={(e) => updateTeamField(idx, 'ruta', e.target.value)}
+                              className="w-16 p-1.5 bg-surface-container border border-surface-container-highest rounded-lg text-center text-xs text-secondary outline-none focus:border-primary"
+                            />
+                          </td>
+
+                          {/* CA */}
+                          <td className="p-1.5 text-center">
+                            <input
+                              type="number"
+                              value={team.ca ?? 0}
+                              onChange={(e) => updateTeamField(idx, 'ca', e.target.value)}
+                              className="w-14 p-1.5 bg-surface-container border border-surface-container-highest rounded-lg text-center text-xs text-on-surface outline-none focus:border-primary"
+                            />
+                          </td>
+
+                          {/* CP */}
+                          <td className="p-1.5 text-center">
+                            <input
+                              type="number"
+                              value={team.cp ?? 0}
+                              onChange={(e) => updateTeamField(idx, 'cp', e.target.value)}
+                              className="w-14 p-1.5 bg-surface-container border border-surface-container-highest rounded-lg text-center text-xs text-on-surface outline-none focus:border-primary"
+                            />
+                          </td>
+
+                          {/* CA-CP */}
+                          <td className="p-1.5 text-center font-bold font-stat-numeric">
+                            <span
+                              className={
+                                (team.cacp || 0) > 0
+                                  ? 'text-green-400'
+                                  : (team.cacp || 0) < 0
+                                  ? 'text-red-400'
+                                  : 'text-outline'
+                              }
+                            >
+                              {team.cacp ?? 0}
+                            </span>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+
+              <div className="p-4 bg-surface-container border-t border-surface-container-highest flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-outline">
+                <span>
+                  💡 <strong>Tip:</strong> Al modificar JG o JJ, el <strong>AVE</strong> y el <strong>CA-CP</strong> se auto-calculan solos.
+                </span>
+
+                <button
+                  onClick={handleSaveStandings}
+                  disabled={savingStandings}
+                  className="px-6 py-2.5 rounded-xl bg-primary text-on-primary font-label-caps uppercase text-xs font-bold tracking-wider hover:opacity-90 disabled:opacity-50 transition-all shadow-md shadow-primary/20 flex items-center gap-2"
+                >
+                  <span className="material-symbols-outlined text-[16px]">save</span>
+                  {savingStandings ? 'Guardando en Supabase...' : 'Guardar Cambios'}
+                </button>
               </div>
             </div>
           </div>
