@@ -4,7 +4,7 @@ export function StatsShowcase() {
       title: 'Comunidad del DH',
       icon: 'photo_camera',
       value: '+36.6K',
-      description: 'Seguidores de nuestra pagina deportiva en @eldesignadove',
+      description: 'Seguidores de nuestra página deportiva en @eldesignadove',
     },
     {
       title: 'Jornadas en Terreno',

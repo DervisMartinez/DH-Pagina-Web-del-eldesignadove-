@@ -125,7 +125,7 @@ export function Footer() {
         </div>
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <span className="font-body-sm text-body-sm text-on-surface-variant">
-            © 2020 El Designado. Todos los derechos reservados.
+            © 2020–2026 El Designado. Todos los derechos reservados.
           </span>
           <div className="flex items-center gap-6 font-label-caps text-label-caps uppercase text-on-surface-variant">
             <Link href="#" className="hover:text-primary transition-colors">

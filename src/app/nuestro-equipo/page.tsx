@@ -4,10 +4,10 @@ const EQUIPO = [
   { role: 'Fundador / CM', name: 'Jesús Guerra' },
   { role: 'Director General / Gerente de Ventas', name: 'Diego Yépez' },
   { role: 'Webmaster', name: 'Dervis Martínez' },
-  { role: 'Diseñador Gráfico', name: 'Leornardo Carmona - Fabián Alvarado' },
+  { role: 'Diseñador Gráfico', name: 'Leonardo Carmona - Fabián Alvarado' },
   { role: 'Talentos de Marca', name: 'Janeily Farías - Molly Jiménez' },
-  { role: 'Corresponsales', name: 'Miguel Chacin, Oriana García, Ricardo Galán y Anna Palermo' },
-  { role: 'Fotógrafos', name: 'Gabriel Lugo - Lucia Vergara' },
+  { role: 'Corresponsales', name: 'Miguel Chacín, Oriana García, Ricardo Galán y Anna Palermo' },
+  { role: 'Fotógrafos', name: 'Gabriel Lugo - Lucía Vergara' },
   { role: 'Colaboradores Nacionales', name: 'Marco Ruiz y Raúl Zambrano' },
   { role: 'Colaboradores Internacionales', name: 'Miguel Fuenmayor y Luis Gilbert' },
 ];

@@ -19,7 +19,7 @@ export function Manifesto() {
           </div>
           <div className="lg:col-span-8 flex flex-col space-y-4">
             <h2 className="font-headline-lg text-headline-md md:text-headline-lg text-primary uppercase">
-              ¿Quienes Somos?
+              ¿Quiénes Somos?
             </h2>
             <p className="font-body-lead text-body-lead text-secondary leading-relaxed">
               El Designado es un medio digital que brinda cobertura a las ligas y eventos más
@@ -28,17 +28,17 @@ export function Manifesto() {
               Serie del Caribe (SDC) y la Serie de las Américas (SDA). Ofrecemos una perspectiva
               fresca, impulsada por jóvenes comunicadores deportivos que reportan directamente desde
               el terreno de juego, ofreciendo entrevistas a jugadores y aficionados, dinámicas
-              interactivas, cobertura en vivo y análisis post-juego
+              interactivas, cobertura en vivo y análisis post-juego.
             </p>
             <div className="flex items-center flex-wrap gap-6 pt-2 font-label-caps text-label-caps text-on-surface-variant">
               <span className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-primary" /> COBERTURA
+                <span className="w-1.5 h-1.5 rounded-full bg-primary" /> COBERTURA EN VIVO
               </span>
               <span className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-primary" /> OPINIONENS & DIGITALES
+                <span className="w-1.5 h-1.5 rounded-full bg-primary" /> OPINIÓN & DIGITAL
               </span>
               <span className="flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-primary" /> COBERTURA
+                <span className="w-1.5 h-1.5 rounded-full bg-primary" /> ANÁLISIS & DEBATE
               </span>
             </div>
           </div>

@@ -120,7 +120,7 @@ export function AboutVisuals() {
                 </h3>
                 <p className="font-body-md text-on-surface-variant">
                   Presencia en certámenes continentales (Serie de las Américas, Serie del Caribe
-                  Miami) y consolidación de la red de corresponsales hacia la cobertura de elite del
+                  Miami) y consolidación de la red de corresponsales hacia la cobertura de élite del
                   World Baseball Classic.
                 </p>
               </div>
