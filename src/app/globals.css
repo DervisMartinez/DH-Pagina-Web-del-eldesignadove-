@@ -44,7 +44,7 @@
   --color-inverse-on-surface: #313031;
   --color-tertiary-container: #e3e1ec;
   --color-primary: #ffffff;
-  --color-on-primary: #2f3131;
+  --color-on-primary: #000000;
   --color-secondary-fixed-dim: #c6c6c9;
   --color-surface-bright: #3a393a;
   --color-on-error-container: #ffdad6;
@@ -179,28 +179,28 @@ html.light {
   --color-surface-bright: #ffffff;
   --color-surface-container-lowest: #ffffff;
   --color-surface-container-low: #ffffff;
-  --color-surface-container: #f0f2f5;
+  --color-surface-container: #f1f3f7;
   --color-surface-container-high: #e5e8ec;
-  --color-surface-container-highest: #d9dde3;
+  --color-surface-container-highest: #d0d5dd;
   --color-surface-variant: #e5e8ec;
 
-  --color-on-background: #111315;
-  --color-on-surface: #111315;
-  --color-on-surface-variant: #475467;
+  --color-on-background: #0f172a;
+  --color-on-surface: #0f172a;
+  --color-on-surface-variant: #334155;
   --color-secondary: #475467;
-  --color-outline: #cbd5e1;
-  --color-outline-variant: #e2e8f0;
+  --color-outline: #525866;
+  --color-outline-variant: #d0d5dd;
 
-  --color-primary: #101828;
+  --color-primary: #0f172a;
   --color-on-primary: #ffffff;
-  --color-tertiary: #101828;
+  --color-tertiary: #0f172a;
   --color-on-tertiary: #ffffff;
-  --color-primary-container: #101828;
+  --color-primary-container: #0f172a;
   --color-on-primary-container: #ffffff;
   --color-secondary-container: #e2e8f0;
   --color-on-secondary-container: #1e293b;
   --color-tertiary-container: #e2e8f0;
-  --color-inverse-surface: #101828;
+  --color-inverse-surface: #0f172a;
   --color-inverse-on-surface: #ffffff;
 
   color-scheme: light;
@@ -208,6 +208,13 @@ html.light {
 
 html.dark {
   color-scheme: dark;
+}
+
+/* Placeholders con legibilidad optima en modo claro */
+html.light input::placeholder,
+html.light textarea::placeholder {
+  color: #64748b;
+  opacity: 0.85;
 }
 
 /* Invertir logotipo de fondo negro a blanco en modo claro */
