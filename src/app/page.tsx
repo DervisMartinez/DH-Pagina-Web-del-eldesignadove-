@@ -16,10 +16,10 @@ export default function Home() {
         <Manifesto />
         <WebRadio />
         <HomeNewsSection />
+        <InstagramFeed />
         <EventsGrid />
         <InstagramReels />
         <StatsShowcase />
-        <InstagramFeed />
         <SocialLinks />
       </div>
     </main>

@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation';
 import { getNoticiaBySlug, getRecentNoticias } from '@/lib/db';
 import type { Metadata } from 'next';
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://eldesignadove.vercel.app';
+
 export const revalidate = 60; // 1 min
 
 export async function generateMetadata({
@@ -20,12 +22,20 @@ export async function generateMetadata({
     };
   }
 
+  const articleUrl = `${SITE_URL}/noticias/${noticia.slug}`;
+  const articleDescription = noticia.subtitle || noticia.content.slice(0, 160);
+
   return {
     title: `${noticia.title} | El Designado`,
-    description: noticia.subtitle || noticia.content.slice(0, 160),
+    description: articleDescription,
+    alternates: {
+      canonical: articleUrl,
+    },
     openGraph: {
       title: noticia.title,
-      description: noticia.subtitle || noticia.content.slice(0, 160),
+      description: articleDescription,
+      url: articleUrl,
+      siteName: 'El Designado',
       images: [noticia.image_url],
       type: 'article',
       publishedTime: noticia.published_at,
@@ -34,7 +44,7 @@ export async function generateMetadata({
     twitter: {
       card: 'summary_large_image',
       title: noticia.title,
-      description: noticia.subtitle || noticia.content.slice(0, 160),
+      description: articleDescription,
       images: [noticia.image_url],
     },
   };
@@ -69,8 +79,41 @@ export default async function NoticiaDetailPage({
 
   const paragraphs = noticia.content.split('\n\n').filter((p) => p.trim() !== '');
 
+  const articleJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'NewsArticle',
+    headline: noticia.title,
+    description: noticia.subtitle || noticia.content.slice(0, 160),
+    image: [noticia.image_url],
+    datePublished: noticia.published_at,
+    dateModified: noticia.published_at,
+    author: [
+      {
+        '@type': 'Person',
+        name: noticia.author,
+      },
+    ],
+    publisher: {
+      '@type': 'NewsMediaOrganization',
+      name: 'El Designado',
+      url: SITE_URL,
+      logo: {
+        '@type': 'ImageObject',
+        url: `${SITE_URL}/icon.png`,
+      },
+    },
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': `${SITE_URL}/noticias/${noticia.slug}`,
+    },
+  };
+
   return (
     <main className="w-full bg-background min-h-[100dvh] text-on-surface pt-28 md:pt-36 pb-24">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+      />
       <article className="max-w-[1000px] mx-auto px-margin-mobile md:px-margin-desktop">
         {/* Navigation Breadcrumb */}
         <div className="flex items-center gap-2 mb-8 text-xs font-label-caps uppercase tracking-wider text-outline">

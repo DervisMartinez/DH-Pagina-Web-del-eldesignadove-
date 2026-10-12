@@ -21,15 +21,32 @@ const spaceGrotesk = Space_Grotesk({
   weight: ['500', '700'],
 });
 
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://eldesignadove.vercel.app';
+
 export const metadata: Metadata = {
-  metadataBase: new URL('https://eldesignadove.vercel.app'),
-  title: 'El Designado | Medio Digital Deportivo',
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: 'El Designado | Medio Digital Deportivo',
+    template: '%s | El Designado',
+  },
   description: 'Medio digital que brinda cobertura de las ligas y eventos más importantes para el fanático venezolano: LVBP, Grandes Ligas (MLB), Clásico Mundial (WBC) y Serie del Caribe.',
   keywords: ['Béisbol', 'LVBP', 'MLB', 'Grandes Ligas', 'Serie del Caribe', 'Noticias de Béisbol', 'El Designado', 'Deportes', 'Venezuela'],
+  alternates: {
+    canonical: '/',
+  },
+  icons: {
+    icon: [
+      { url: '/icon.png', sizes: 'any' },
+      { url: '/icon.png', type: 'image/png', sizes: '192x192' },
+    ],
+    apple: [
+      { url: '/apple-icon.png', sizes: '180x180', type: 'image/png' },
+    ],
+  },
   openGraph: {
     title: 'El Designado | Medio Digital Deportivo',
     description: 'Medio digital que brinda cobertura de las ligas y eventos más importantes para el fanático venezolano: LVBP, Grandes Ligas (MLB), Clásico Mundial (WBC) y Serie del Caribe.',
-    url: 'https://eldesignadove.vercel.app',
+    url: SITE_URL,
     siteName: 'El Designado',
     images: [
       {
@@ -57,6 +74,24 @@ import { WordPressAdminBar } from '@/components/layout/WordPressAdminBar';
 import { ThemeProvider } from '@/features/core/providers/ThemeContext';
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const jsonLdWebsite = {
+    '@context': 'https://schema.org',
+    '@type': 'WebSite',
+    name: 'El Designado',
+    alternateName: ['El Designado VE', 'ElDesignado', 'El Designado - Medio Digital Deportivo'],
+    url: SITE_URL,
+    inLanguage: 'es-VE',
+    publisher: {
+      '@type': 'NewsMediaOrganization',
+      name: 'El Designado',
+      url: SITE_URL,
+      logo: {
+        '@type': 'ImageObject',
+        url: `${SITE_URL}/icon.png`,
+      },
+    },
+  };
+
   return (
     <html
       lang="es"
@@ -64,6 +99,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       className={`dark ${chivo.variable} ${hankenGrotesk.variable} ${spaceGrotesk.variable} scroll-smooth`}
     >
       <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(jsonLdWebsite),
+          }}
+        />
         <script
           dangerouslySetInnerHTML={{
             __html: `

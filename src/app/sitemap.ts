@@ -2,7 +2,7 @@ import { MetadataRoute } from 'next';
 import { getNoticias } from '@/lib/db';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const baseUrl = 'https://eldesignadove.vercel.app';
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://eldesignadove.vercel.app';
 
   // Static routes
   const staticRoutes: MetadataRoute.Sitemap = [
