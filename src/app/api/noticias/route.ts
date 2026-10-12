@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { pool, getNoticias } from '@/lib/db';
+import { notifySearchEnginesOnPublish } from '@/lib/seo-indexer';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -44,7 +45,13 @@ export async function POST(request: Request) {
           id,
         ]
       );
-      return NextResponse.json({ success: true, noticia: res.rows[0], updated: true });
+
+      const savedNoticia = res.rows[0];
+      if (savedNoticia.status === 'published') {
+        notifySearchEnginesOnPublish(savedNoticia.slug);
+      }
+
+      return NextResponse.json({ success: true, noticia: savedNoticia, updated: true });
     }
 
     // Auto generate clean slug
@@ -75,7 +82,12 @@ export async function POST(request: Request) {
       ]
     );
 
-    return NextResponse.json({ success: true, noticia: res.rows[0] });
+    const createdNoticia = res.rows[0];
+    if (createdNoticia.status === 'published') {
+      notifySearchEnginesOnPublish(createdNoticia.slug);
+    }
+
+    return NextResponse.json({ success: true, noticia: createdNoticia });
   } catch (error: any) {
     console.error('Error creating/updating noticia:', error);
     return NextResponse.json({ error: error.message || 'Error al guardar' }, { status: 500 });
@@ -92,6 +104,7 @@ export async function DELETE(request: Request) {
     }
 
     await pool.query('DELETE FROM noticias WHERE id = $1', [id]);
+    notifySearchEnginesOnPublish();
     return NextResponse.json({ success: true });
   } catch (error: any) {
     console.error('Error deleting noticia:', error);

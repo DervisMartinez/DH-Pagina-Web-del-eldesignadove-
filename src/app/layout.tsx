@@ -117,6 +117,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
         <link
+          rel="alternate"
+          type="application/rss+xml"
+          title="El Designado - Noticias de Béisbol"
+          href="/rss.xml"
+        />
+        <link
           href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0"
           rel="stylesheet"
         />
