@@ -2,6 +2,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getNoticiaBySlug, getRecentNoticias } from '@/lib/db';
+import { ShareButtons } from '@/components/ui/ShareButtons';
 import type { Metadata } from 'next';
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://eldesignadove.vercel.app';
@@ -162,47 +163,47 @@ export default async function NoticiaDetailPage({
               </div>
             </div>
 
-            {/* Social Share Buttons */}
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-label-caps text-outline uppercase mr-2 hidden sm:inline">
-                Compartir:
-              </span>
-              <a
-                href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
-                  `${noticia.title} https://eldesignadove.vercel.app/noticias/${noticia.slug}`
-                )}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-9 h-9 rounded-full bg-surface-container-highest hover:bg-green-600 hover:text-white transition-colors flex items-center justify-center text-secondary"
-                title="Compartir en WhatsApp"
-              >
-                <span className="material-symbols-outlined text-[18px]">chat</span>
-              </a>
-              <a
-                href={`https://twitter.com/intent/tweet?text=${encodeURIComponent(
-                  noticia.title
-                )}&url=${encodeURIComponent(`https://eldesignadove.vercel.app/noticias/${noticia.slug}`)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-9 h-9 rounded-full bg-surface-container-highest hover:bg-sky-500 hover:text-white transition-colors flex items-center justify-center text-secondary"
-                title="Compartir en X"
-              >
-                <span className="material-symbols-outlined text-[18px]">share</span>
-              </a>
-            </div>
+            {/* Social Share Buttons with network chooser */}
+            <ShareButtons
+              title={noticia.title}
+              subtitle={noticia.subtitle}
+              url={`${SITE_URL}/noticias/${noticia.slug}`}
+              variant="header"
+            />
           </div>
         </header>
 
-        {/* Lead Image */}
-        <div className="relative w-full h-[320px] sm:h-[460px] md:h-[540px] rounded-3xl overflow-hidden mb-12 shadow-2xl bg-surface-container-highest border border-surface-container-highest">
-          <Image
-            src={noticia.image_url}
-            alt={noticia.title}
-            fill
-            className="object-cover"
-            priority
-            unoptimized={noticia.image_url.startsWith('http')}
+        {/* Lead Image - 100% Completa sin recortes con fondo ambiental inmersivo */}
+        <div className="relative w-full rounded-2xl md:rounded-3xl overflow-hidden mb-12 shadow-2xl bg-surface-container-lowest border border-surface-container-highest group">
+          {/* Fondo ambiental desenfocado que absorbe los tonos de la foto */}
+          <div
+            className="absolute inset-0 bg-cover bg-center filter blur-3xl opacity-35 scale-110 pointer-events-none"
+            style={{ backgroundImage: `url(${noticia.image_url})` }}
           />
+
+          {/* Botón flotante para ver en alta resolución */}
+          <a
+            href={noticia.image_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="absolute top-4 right-4 z-20 px-3.5 py-1.5 rounded-full bg-surface-container-lowest/80 backdrop-blur-md hover:bg-primary hover:text-on-primary text-on-surface text-[11px] font-label-caps uppercase tracking-wider border border-outline-variant/40 transition-all flex items-center gap-1.5 shadow-lg group/zoom"
+            title="Ver imagen completa en alta resolución"
+          >
+            <span className="material-symbols-outlined text-[15px] group-hover/zoom:scale-110 transition-transform">
+              zoom_in
+            </span>
+            <span className="hidden sm:inline font-bold">Ver HD</span>
+          </a>
+
+          {/* Imagen completa sin recortar ningún detalle */}
+          <div className="relative z-10 w-full flex items-center justify-center p-2 sm:p-3 md:p-4">
+            <img
+              src={noticia.image_url}
+              alt={noticia.title}
+              className="w-full h-auto max-h-[75vh] md:max-h-[640px] object-contain rounded-xl md:rounded-2xl shadow-xl transition-transform duration-300"
+              loading="eager"
+            />
+          </div>
         </div>
 
         {/* Article Body Content */}
@@ -215,6 +216,16 @@ export default async function NoticiaDetailPage({
               {p}
             </p>
           ))}
+        </div>
+
+        {/* Share Banner at End of Article */}
+        <div className="max-w-[760px] mx-auto">
+          <ShareButtons
+            title={noticia.title}
+            subtitle={noticia.subtitle}
+            url={`${SITE_URL}/noticias/${noticia.slug}`}
+            variant="banner"
+          />
         </div>
 
         {/* Article Footer & Author Box */}
