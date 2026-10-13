@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { sortAndRankStandings } from '@/lib/baseball-standings';
 
 interface NoticiaItem {
   id: number;
@@ -215,7 +216,9 @@ export default function WordPressAdminPage() {
       const res = await fetch(`/api/lvbp-standings?season=${season}`);
       const json = await res.json();
       if (json.standings && json.standings[stage]) {
-        setStandingsList(json.standings[stage]);
+        const stageData = json.standings[stage];
+        const ranked = stage === 'Series Particulares' ? stageData : sortAndRankStandings(stageData);
+        setStandingsList(ranked);
       } else {
         setStandingsList([]);
       }
@@ -231,6 +234,13 @@ export default function WordPressAdminPage() {
       fetchAdminStandings(standingsSeason, standingsStage);
     }
   }, [activeTab, standingsSeason, standingsStage]);
+
+  const handleAutoSortStandings = () => {
+    if (standingsStage === 'Series Particulares') return;
+    const ranked = sortAndRankStandings(standingsList);
+    setStandingsList(ranked);
+    setFeedback({ text: '¡Tabla reordenada por mérito deportivo (AVE, JG, JP, CA-CP y DIF calculados)!', type: 'success' });
+  };
 
   const updateTeamField = (index: number, field: string, value: any) => {
     const updated = [...standingsList];
@@ -261,18 +271,24 @@ export default function WordPressAdminPage() {
     setSavingStandings(true);
     setFeedback(null);
     try {
+      const processedData = standingsStage === 'Series Particulares' 
+        ? standingsList 
+        : sortAndRankStandings(standingsList);
+
+      setStandingsList(processedData);
+
       const res = await fetch('/api/lvbp-standings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           season: standingsSeason,
           stage: standingsStage,
-          data: standingsList,
+          data: processedData,
         }),
       });
       const json = await res.json();
       if (!res.ok) throw new Error(json.error || 'Error al guardar');
-      setFeedback({ text: '¡Posiciones LVBP guardadas y actualizadas en tiempo real en la web!', type: 'success' });
+      setFeedback({ text: '¡Posiciones LVBP ordenadas por récord y guardadas en tiempo real en la web!', type: 'success' });
     } catch (err: any) {
       setFeedback({ text: err.message, type: 'error' });
     } finally {
@@ -1561,7 +1577,17 @@ export default function WordPressAdminPage() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleAutoSortStandings}
+                  className="px-3.5 py-2 rounded-xl bg-primary/10 text-primary border border-primary/30 text-xs font-label-caps uppercase font-bold hover:bg-primary/20 transition-colors flex items-center gap-1.5 shadow-sm"
+                  title="Ordena los equipos según la fórmula oficial de AVE, JG, JP y calcula los Juegos de Diferencia (DIF)"
+                >
+                  <span className="material-symbols-outlined text-[16px]">format_list_numbered</span>
+                  Clasificar por Récord
+                </button>
+
                 <button
                   type="button"
                   onClick={handleResetToZero}

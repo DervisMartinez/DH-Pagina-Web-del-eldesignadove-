@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 import { pool } from '@/lib/db';
+import { sortAndRankStandings } from '@/lib/baseball-standings';
+import { revalidatePath } from 'next/cache';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -18,7 +20,9 @@ export async function GET(request: Request) {
 
     if (res.rows.length > 0) {
       res.rows.forEach((row) => {
-        standings[row.stage] = row.data;
+        standings[row.stage] = row.stage === 'Series Particulares' 
+          ? row.data 
+          : sortAndRankStandings(row.data);
       });
     }
 
@@ -48,15 +52,24 @@ export async function POST(request: Request) {
       );
     }
 
+    const processedData = stage === 'Series Particulares' ? data : sortAndRankStandings(data);
+
     await pool.query(
       `INSERT INTO posiciones_lvbp (season, stage, data, updated_at)
        VALUES ($1, $2, $3, NOW())
        ON CONFLICT (season, stage) 
        DO UPDATE SET data = EXCLUDED.data, updated_at = NOW()`,
-      [season, stage, JSON.stringify(data)]
+      [season, stage, JSON.stringify(processedData)]
     );
 
-    return NextResponse.json({ success: true, season, stage });
+    try {
+      revalidatePath('/lvbp');
+      revalidatePath('/');
+    } catch (e) {
+      // Background non-blocking
+    }
+
+    return NextResponse.json({ success: true, season, stage, data: processedData });
   } catch (error: any) {
     console.error('Error saving standings to Supabase:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });

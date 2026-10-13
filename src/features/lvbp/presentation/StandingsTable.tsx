@@ -2,25 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-
-interface TeamStanding {
-  id: number;
-  team: string;
-  code: string;
-  jj: number;
-  jg: number;
-  jp: number;
-  ave: string;
-  dif: string;
-  racha: string;
-  ult10: string;
-  casa: string;
-  ruta: string;
-  ca: number;
-  cp: number;
-  cacp: number;
-  status: string;
-}
+import { sortAndRankStandings, type TeamStanding } from '@/lib/baseball-standings';
 
 interface StandingsData {
   updatedAt: string;
@@ -61,7 +43,10 @@ export function StandingsTable() {
       });
   }, [selectedYear]);
 
-  const currentData = data[activeTab] || [];
+  const rawData = data[activeTab] || [];
+  const currentData = activeTab === 'Series Particulares' 
+    ? rawData 
+    : sortAndRankStandings(rawData);
 
   return (
     <div className="w-full max-w-6xl mx-auto bg-surface-container-low rounded-2xl shadow-2xl overflow-hidden border border-surface-container-highest">
