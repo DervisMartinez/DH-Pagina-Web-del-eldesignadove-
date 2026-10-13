@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { getNoticias } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
-export const revalidate = 60; // 1 min
+export const revalidate = 0;
 
 export async function GET() {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://eldesignadove.vercel.app';
@@ -52,7 +52,7 @@ ${items}
     return new NextResponse(rss, {
       headers: {
         'Content-Type': 'application/rss+xml; charset=utf-8',
-        'Cache-Control': 'public, s-maxage=60, stale-while-revalidate=300',
+        'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=59',
       },
     });
   } catch (error) {
