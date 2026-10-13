@@ -85,6 +85,8 @@ export default function WordPressAdminPage() {
   const [postStatus, setPostStatus] = useState<'published' | 'draft'>('published');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [imageSourceTab, setImageSourceTab] = useState<'url' | 'upload' | 'preset'>('url');
+  const [imagePreviewError, setImagePreviewError] = useState(false);
 
   // Users Management state
   const [users, setUsers] = useState<UserItem[]>([]);
@@ -317,6 +319,55 @@ export default function WordPressAdminPage() {
     setStandingsList(reset);
   };
 
+  // Auto-comprimir imágenes en el navegador para no saturar el almacenamiento gratuito de Supabase
+  const compressImageFile = async (file: File, maxWidth = 1280, quality = 0.82): Promise<File> => {
+    if (file.size < 200 * 1024 || file.type === 'image/gif' || file.type === 'image/svg+xml') {
+      return file;
+    }
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event) => {
+        const img = new Image();
+        img.src = event.target?.result as string;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width;
+          let height = img.height;
+          if (width > maxWidth) {
+            height = Math.round((height * maxWidth) / width);
+            width = maxWidth;
+          }
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            canvas.toBlob(
+              (blob) => {
+                if (blob && blob.size < file.size) {
+                  const compressedFile = new File([blob], file.name.replace(/\.[^.]+$/, '.jpg'), {
+                    type: 'image/jpeg',
+                    lastModified: Date.now(),
+                  });
+                  resolve(compressedFile);
+                } else {
+                  resolve(file);
+                }
+              },
+              'image/jpeg',
+              quality
+            );
+          } else {
+            resolve(file);
+          }
+        };
+        img.onerror = () => resolve(file);
+      };
+      reader.onerror = () => resolve(file);
+    });
+  };
+
   // Upload image file directly from PC
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -326,8 +377,13 @@ export default function WordPressAdminPage() {
     setFeedback(null);
 
     try {
+      // Auto-optimizar imagen en el cliente para ahorrar cuota en Supabase
+      const optimizedFile = await compressImageFile(file);
+      const originalKB = Math.round(file.size / 1024);
+      const optimizedKB = Math.round(optimizedFile.size / 1024);
+
       const formData = new FormData();
-      formData.append('file', file);
+      formData.append('file', optimizedFile);
 
       const res = await fetch('/api/admin/upload', {
         method: 'POST',
@@ -338,7 +394,11 @@ export default function WordPressAdminPage() {
       if (!res.ok) throw new Error(data.error || 'Error al subir imagen');
 
       setImageUrl(data.url);
-      setFeedback({ text: `¡Foto "${file.name}" subida exitosamente a Supabase!`, type: 'success' });
+      setImagePreviewError(false);
+      setFeedback({
+        text: `¡Foto "${file.name}" subida a Supabase! (Optimizada de ${originalKB}KB a ${optimizedKB}KB para ahorrar espacio)`,
+        type: 'success',
+      });
     } catch (err: any) {
       setFeedback({ text: err.message || 'Error al subir archivo', type: 'error' });
     } finally {
@@ -1364,63 +1424,213 @@ export default function WordPressAdminPage() {
                       />
                     </div>
 
-                    {/* Image Upload Feature (Like WordPress Media) */}
-                    <div>
-                      <label className="block text-xs font-label-caps uppercase text-outline mb-1 font-bold">
-                        Imagen Destacada
-                      </label>
-
-                      {/* File upload button */}
-                      <div className="mb-3">
-                        <label className="w-full flex items-center justify-center gap-2 p-3 bg-surface-container hover:bg-surface-container-highest border border-dashed border-primary/50 rounded-xl cursor-pointer transition-colors text-primary font-label-caps uppercase text-xs font-bold">
-                          <span className="material-symbols-outlined text-[18px]">
-                            {isUploadingImage ? 'sync' : 'upload_file'}
-                          </span>
-                          <span>
-                            {isUploadingImage ? 'Subiendo foto a Supabase...' : '📁 Subir foto desde mi PC'}
-                          </span>
-                          <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleFileUpload}
-                            disabled={isUploadingImage}
-                            className="hidden"
-                          />
+                    {/* Image Selector & Uploader (Multi-mode: URL / PC / Equipos) */}
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <label className="text-xs font-label-caps uppercase text-outline font-bold">
+                          Imagen Destacada
                         </label>
-                      </div>
-
-                      {/* Or paste URL */}
-                      <input
-                        type="text"
-                        value={imageUrl}
-                        onChange={(e) => setImageUrl(e.target.value)}
-                        placeholder="https://... o /api/uploads/..."
-                        required
-                        className="w-full p-3 bg-surface-container border border-surface-container-highest rounded-xl text-on-surface text-xs outline-none focus:border-primary mb-2"
-                      />
-
-                      {/* Quick local images */}
-                      <div className="space-y-1">
-                        <span className="text-[10px] text-outline block font-label-caps uppercase">
-                          O elegir foto ya guardada:
+                        <span className="text-[10px] text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full font-bold">
+                          {imageUrl.startsWith('http')
+                            ? '🌐 Enlace Externo (0 MB)'
+                            : imageUrl.startsWith('/api/uploads')
+                            ? '💾 En Supabase'
+                            : '📂 Local'}
                         </span>
-                        <div className="flex flex-wrap gap-1">
-                          {predefinedImages.map((img) => (
-                            <button
-                              key={img.url}
-                              type="button"
-                              onClick={() => setImageUrl(img.url)}
-                              className={`px-2 py-1 text-[9px] rounded-lg border transition-colors ${
-                                imageUrl === img.url
-                                  ? 'bg-primary text-on-primary border-primary font-bold'
-                                  : 'bg-surface-container text-secondary border-surface-container-highest hover:text-primary'
-                              }`}
-                            >
-                              {img.label}
-                            </button>
-                          ))}
-                        </div>
                       </div>
+
+                      {/* Selector de pestañas / modos */}
+                      <div className="grid grid-cols-3 gap-1 p-1 bg-surface-container rounded-xl border border-surface-container-highest text-[10px] font-label-caps uppercase">
+                        <button
+                          type="button"
+                          onClick={() => setImageSourceTab('url')}
+                          className={`py-1.5 px-1.5 rounded-lg text-center font-bold transition-all flex items-center justify-center gap-1 ${
+                            imageSourceTab === 'url'
+                              ? 'bg-primary text-on-primary shadow-sm'
+                              : 'text-secondary hover:text-on-surface'
+                          }`}
+                        >
+                          <span className="material-symbols-outlined text-[13px]">link</span>
+                          <span>Enlace Web</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setImageSourceTab('upload')}
+                          className={`py-1.5 px-1.5 rounded-lg text-center font-bold transition-all flex items-center justify-center gap-1 ${
+                            imageSourceTab === 'upload'
+                              ? 'bg-primary text-on-primary shadow-sm'
+                              : 'text-secondary hover:text-on-surface'
+                          }`}
+                        >
+                          <span className="material-symbols-outlined text-[13px]">upload_file</span>
+                          <span>Subir PC</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setImageSourceTab('preset')}
+                          className={`py-1.5 px-1.5 rounded-lg text-center font-bold transition-all flex items-center justify-center gap-1 ${
+                            imageSourceTab === 'preset'
+                              ? 'bg-primary text-on-primary shadow-sm'
+                              : 'text-secondary hover:text-on-surface'
+                          }`}
+                        >
+                          <span className="material-symbols-outlined text-[13px]">sports_baseball</span>
+                          <span>Equipos</span>
+                        </button>
+                      </div>
+
+                      {/* Pestaña 1: Enlace Web / URL (Recomendado para ahorrar espacio) */}
+                      {imageSourceTab === 'url' && (
+                        <div className="space-y-2 p-3 bg-surface-container/60 rounded-xl border border-surface-container-highest">
+                          <div className="flex items-start gap-1.5">
+                            <span className="material-symbols-outlined text-[15px] text-emerald-400 mt-0.5 shrink-0">
+                              verified
+                            </span>
+                            <p className="text-[11px] text-secondary leading-snug">
+                              <strong className="text-on-surface">Recomendado (0 MB en Supabase):</strong> Pega aquí el enlace de cualquier foto de internet (MLB, Twitter/X, Imgur, Cloudinary, periódicos o agencias). No consume espacio de tu base de datos.
+                            </p>
+                          </div>
+
+                          <div className="flex gap-1.5">
+                            <input
+                              type="url"
+                              value={imageUrl}
+                              onChange={(e) => {
+                                setImageUrl(e.target.value);
+                                setImagePreviewError(false);
+                              }}
+                              placeholder="https://ejemplo.com/foto-beisbol.jpg"
+                              required
+                              className="flex-1 p-2.5 bg-surface-container border border-surface-container-highest rounded-xl text-on-surface text-xs outline-none focus:border-primary"
+                            />
+                            {imageUrl && (
+                              <button
+                                type="button"
+                                onClick={() => setImageUrl('')}
+                                className="px-2.5 rounded-xl bg-surface-container-highest hover:bg-error hover:text-white text-secondary text-xs transition-colors"
+                                title="Borrar enlace"
+                              >
+                                <span className="material-symbols-outlined text-[16px]">close</span>
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Pestaña 2: Subir archivo desde PC con optimización */}
+                      {imageSourceTab === 'upload' && (
+                        <div className="space-y-2 p-3 bg-surface-container/60 rounded-xl border border-surface-container-highest">
+                          <div className="flex items-start gap-1.5 mb-1">
+                            <span className="material-symbols-outlined text-[15px] text-amber-400 mt-0.5 shrink-0">
+                              info
+                            </span>
+                            <p className="text-[11px] text-secondary leading-snug">
+                              <strong className="text-on-surface">Almacenamiento en Supabase:</strong> Tu plan gratuito tiene 500 MB. Al subir fotos desde tu PC, las optimizamos automáticamente a &lt;150 KB para cuidar tu cuota.
+                            </p>
+                          </div>
+
+                          <label className="w-full flex flex-col items-center justify-center gap-1.5 p-4 bg-surface-container hover:bg-surface-container-highest border border-dashed border-primary/50 rounded-xl cursor-pointer transition-colors text-primary font-label-caps uppercase text-xs font-bold text-center">
+                            <span className="material-symbols-outlined text-[24px]">
+                              {isUploadingImage ? 'sync' : 'cloud_upload'}
+                            </span>
+                            <span>
+                              {isUploadingImage ? 'Comprimiendo y subiendo foto...' : 'Seleccionar foto desde mi PC'}
+                            </span>
+                            <span className="text-[10px] text-outline normal-case font-normal">
+                              JPG, PNG o WEBP (máx. 10 MB)
+                            </span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={handleFileUpload}
+                              disabled={isUploadingImage}
+                              className="hidden"
+                            />
+                          </label>
+                        </div>
+                      )}
+
+                      {/* Pestaña 3: Equipos y Galería Local */}
+                      {imageSourceTab === 'preset' && (
+                        <div className="space-y-2 p-3 bg-surface-container/60 rounded-xl border border-surface-container-highest">
+                          <span className="text-[10px] text-outline block font-label-caps uppercase font-bold">
+                            Selecciona una imagen guardada en la web:
+                          </span>
+                          <div className="flex flex-wrap gap-1.5">
+                            {predefinedImages.map((img) => (
+                              <button
+                                key={img.url}
+                                type="button"
+                                onClick={() => {
+                                  setImageUrl(img.url);
+                                  setImagePreviewError(false);
+                                }}
+                                className={`px-2.5 py-1.5 text-[10px] rounded-lg border transition-all ${
+                                  imageUrl === img.url
+                                    ? 'bg-primary text-on-primary border-primary font-bold shadow-sm'
+                                    : 'bg-surface-container text-secondary border-surface-container-highest hover:text-primary'
+                                }`}
+                              >
+                                {img.label}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Vista Previa en Vivo (Live Preview) */}
+                      {imageUrl && (
+                        <div className="rounded-xl border border-surface-container-highest bg-surface-container-lowest p-2.5 space-y-2">
+                          <div className="flex items-center justify-between text-[10px] font-label-caps uppercase text-outline">
+                            <span className="font-bold flex items-center gap-1">
+                              <span className="material-symbols-outlined text-[13px] text-primary">visibility</span>
+                              Vista Previa de la Foto
+                            </span>
+                            {!imagePreviewError ? (
+                              <span className="text-emerald-400 flex items-center gap-0.5">
+                                <span className="material-symbols-outlined text-[13px]">check</span> Lista
+                              </span>
+                            ) : (
+                              <span className="text-amber-400 flex items-center gap-0.5">
+                                <span className="material-symbols-outlined text-[13px]">warning</span> Error de enlace
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="relative w-full h-32 rounded-lg overflow-hidden bg-surface-container-highest flex items-center justify-center border border-outline-variant/20">
+                            <img
+                              src={imageUrl}
+                              alt="Vista previa"
+                              onError={() => setImagePreviewError(true)}
+                              onLoad={() => setImagePreviewError(false)}
+                              className="w-full h-full object-contain bg-black/20"
+                            />
+                            {imagePreviewError && (
+                              <div className="absolute inset-0 bg-background/90 flex flex-col items-center justify-center p-2 text-center">
+                                <span className="material-symbols-outlined text-[20px] text-amber-400 mb-1">
+                                  broken_image
+                                </span>
+                                <p className="text-[10px] text-secondary">
+                                  No se pudo cargar la imagen. Revisa que el enlace sea directo a la foto (.jpg, .png, .webp).
+                                </p>
+                              </div>
+                            )}
+                          </div>
+
+                          <div className="flex items-center justify-between text-[10px] text-outline truncate pt-1 border-t border-surface-container-highest">
+                            <span className="truncate max-w-[200px]" title={imageUrl}>
+                              {imageUrl}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => setImageUrl('')}
+                              className="text-error hover:underline ml-2 whitespace-nowrap"
+                            >
+                              Quitar foto
+                            </button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   </div>
                 </div>
