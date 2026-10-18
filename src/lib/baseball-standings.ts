@@ -63,22 +63,9 @@ export function sortAndRankStandings(teams: TeamStanding[]): TeamStanding[] {
       return jpA - jpB;
     }
 
-    // Criterio 4: Diferencial de carreras (CA - CP)
-    const diffA = Number(a.cacp) || 0;
-    const diffB = Number(b.cacp) || 0;
-    if (diffB !== diffA) {
-      return diffB - diffA;
-    }
-
-    // Criterio 5: Carreras anotadas (CA)
-    const caA = Number(a.ca) || 0;
-    const caB = Number(b.ca) || 0;
-    if (caB !== caA) {
-      return caB - caA;
-    }
-
-    // Criterio 6: Desempate alfabético
-    return (a.team || '').localeCompare(b.team || '');
+    // Criterio 4: Si están empatados en porcentaje, victorias y derrotas,
+    // se respeta el orden oficial de la liga (Serie Particular / Desempate directo)
+    return 0;
   });
 
   // 2. Calcular Juegos de Diferencia (DIF) respecto al 1er lugar
@@ -93,12 +80,12 @@ export function sortAndRankStandings(teams: TeamStanding[]): TeamStanding[] {
     if (!anyGamesPlayed) {
       dif = '0';
     } else if (index === 0) {
-      dif = '-';
+      dif = '0';
     } else {
       const teamJG = Number(team.jg) || 0;
       const teamJP = Number(team.jp) || 0;
       const gb = ((leaderJG - teamJG) + (teamJP - leaderJP)) / 2;
-      dif = gb <= 0 ? '-' : gb % 1 === 0 ? gb.toFixed(0) : gb.toFixed(1);
+      dif = gb <= 0 ? '0' : gb % 1 === 0 ? gb.toFixed(0) : gb.toFixed(1);
     }
 
     return {
