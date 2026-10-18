@@ -473,6 +473,17 @@ export default function WordPressAdminPage() {
     setExternalLink(item.external_link || '');
     setIsFeatured(item.is_featured);
     setPostStatus(item.status);
+    setImagePreviewError(false);
+
+    // Seleccionar automáticamente la pestaña adecuada según el tipo de imagen
+    if (item.image_url?.startsWith('http://') || item.image_url?.startsWith('https://')) {
+      setImageSourceTab('url');
+    } else if (item.image_url?.startsWith('/api/uploads')) {
+      setImageSourceTab('upload');
+    } else {
+      setImageSourceTab('preset');
+    }
+
     setActiveTab('editor');
   };
 
@@ -480,6 +491,15 @@ export default function WordPressAdminPage() {
     e.preventDefault();
     setIsSubmitting(true);
     setFeedback(null);
+
+    if (!imageUrl || !imageUrl.trim()) {
+      setFeedback({
+        text: 'Por favor añade o selecciona una imagen destacada (enlace web o sube un archivo).',
+        type: 'error',
+      });
+      setIsSubmitting(false);
+      return;
+    }
 
     const targetStatus = forceStatus || postStatus;
 
@@ -1493,14 +1513,13 @@ export default function WordPressAdminPage() {
 
                           <div className="flex gap-1.5">
                             <input
-                              type="url"
+                              type="text"
                               value={imageUrl}
                               onChange={(e) => {
                                 setImageUrl(e.target.value);
                                 setImagePreviewError(false);
                               }}
-                              placeholder="https://ejemplo.com/foto-beisbol.jpg"
-                              required
+                              placeholder="https://ejemplo.com/foto-beisbol.jpg o /api/uploads/..."
                               className="flex-1 p-2.5 bg-surface-container border border-surface-container-highest rounded-xl text-on-surface text-xs outline-none focus:border-primary"
                             />
                             {imageUrl && (
@@ -1520,6 +1539,24 @@ export default function WordPressAdminPage() {
                       {/* Pestaña 2: Subir archivo desde PC con optimización */}
                       {imageSourceTab === 'upload' && (
                         <div className="space-y-2 p-3 bg-surface-container/60 rounded-xl border border-surface-container-highest">
+                          {/* Tarjeta de estado si ya hay una foto subida a Supabase */}
+                          {imageUrl && imageUrl.startsWith('/api/uploads') && (
+                            <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl flex items-center justify-between text-xs text-emerald-400 mb-2">
+                              <div className="flex items-center gap-2">
+                                <span className="material-symbols-outlined text-[18px]">check_circle</span>
+                                <div>
+                                  <span className="font-bold block">Foto actual guardada en Supabase</span>
+                                  <span className="text-[10px] text-outline truncate max-w-[200px] block">
+                                    {imageUrl}
+                                  </span>
+                                </div>
+                              </div>
+                              <span className="text-[10px] font-bold uppercase bg-emerald-500/20 px-2 py-0.5 rounded-full">
+                                Lista
+                              </span>
+                            </div>
+                          )}
+
                           <div className="flex items-start gap-1.5 mb-1">
                             <span className="material-symbols-outlined text-[15px] text-amber-400 mt-0.5 shrink-0">
                               info
@@ -1534,7 +1571,11 @@ export default function WordPressAdminPage() {
                               {isUploadingImage ? 'sync' : 'cloud_upload'}
                             </span>
                             <span>
-                              {isUploadingImage ? 'Comprimiendo y subiendo foto...' : 'Seleccionar foto desde mi PC'}
+                              {isUploadingImage
+                                ? 'Comprimiendo y subiendo foto...'
+                                : imageUrl && imageUrl.startsWith('/api/uploads')
+                                ? '¿Deseas reemplazarla? Seleccionar otra foto de mi PC'
+                                : 'Seleccionar foto desde mi PC'}
                             </span>
                             <span className="text-[10px] text-outline normal-case font-normal">
                               JPG, PNG o WEBP (máx. 10 MB)

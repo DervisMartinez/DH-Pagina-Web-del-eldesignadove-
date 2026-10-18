@@ -78,7 +78,13 @@ export default async function NoticiaDetailPage({
     }
   };
 
-  const paragraphs = noticia.content.split('\n\n').filter((p) => p.trim() !== '');
+  const normalizedContent = (noticia.content || '')
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n');
+  const paragraphs = normalizedContent
+    .split(/\n{2,}/)
+    .map((p) => p.trim())
+    .filter((p) => p !== '');
 
   const articleJsonLd = {
     '@context': 'https://schema.org',
@@ -211,7 +217,7 @@ export default async function NoticiaDetailPage({
           {paragraphs.map((p, idx) => (
             <p
               key={idx}
-              className="text-on-surface text-[17px] md:text-[19px] leading-[1.8] mb-6 font-body-md text-justify"
+              className="text-on-surface text-[17px] md:text-[19px] leading-[1.8] mb-6 font-body-md whitespace-pre-line text-left"
             >
               {p}
             </p>
