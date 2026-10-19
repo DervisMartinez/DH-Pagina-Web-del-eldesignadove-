@@ -32,12 +32,28 @@ export interface Noticia {
   category: string;
   author: string;
   image_url: string;
+  gallery_images?: string[] | null;
   external_link?: string | null;
   is_featured: boolean;
   status: 'published' | 'draft';
   views: number;
   published_at: string;
   created_at: string;
+}
+
+export function parseNoticiaRow(row: any): Noticia {
+  let gallery = row.gallery_images;
+  if (typeof gallery === 'string') {
+    try {
+      gallery = JSON.parse(gallery);
+    } catch {
+      gallery = [];
+    }
+  }
+  return {
+    ...row,
+    gallery_images: Array.isArray(gallery) ? gallery : [],
+  };
 }
 
 export interface Usuario {
@@ -79,7 +95,7 @@ export async function getNoticias(
     query += ' ORDER BY is_featured DESC, published_at DESC';
 
     const res = await pool.query(query, params);
-    return res.rows;
+    return res.rows.map(parseNoticiaRow);
   } catch (error) {
     console.error('Error fetching noticias from Supabase:', error);
     return [];
@@ -94,7 +110,7 @@ export async function getNoticiaBySlug(slug: string): Promise<Noticia | null> {
     // Increment views asynchronously
     pool.query('UPDATE noticias SET views = views + 1 WHERE slug = $1', [slug]).catch(console.error);
 
-    return res.rows[0];
+    return parseNoticiaRow(res.rows[0]);
   } catch (error) {
     console.error(`Error fetching noticia "${slug}":`, error);
     return null;
@@ -114,7 +130,7 @@ export async function getRecentNoticias(limit: number = 3, excludeSlug?: string)
     query += ` ORDER BY published_at DESC LIMIT ${limit}`;
 
     const res = await pool.query(query, params);
-    return res.rows;
+    return res.rows.map(parseNoticiaRow);
   } catch (error) {
     console.error('Error fetching recent noticias:', error);
     return [];

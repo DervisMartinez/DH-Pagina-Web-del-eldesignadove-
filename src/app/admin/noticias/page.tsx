@@ -13,6 +13,7 @@ interface NoticiaItem {
   category: string;
   author: string;
   image_url: string;
+  gallery_images?: string[];
   external_link?: string | null;
   status: 'published' | 'draft';
   is_featured: boolean;
@@ -87,6 +88,12 @@ export default function WordPressAdminPage() {
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [imageSourceTab, setImageSourceTab] = useState<'url' | 'upload' | 'preset'>('url');
   const [imagePreviewError, setImagePreviewError] = useState(false);
+
+  // Multi-photo Carousel / Gallery State
+  const [galleryImages, setGalleryImages] = useState<string[]>([]);
+  const [newGalleryUrl, setNewGalleryUrl] = useState('');
+  const [isUploadingGallery, setIsUploadingGallery] = useState(false);
+  const [galleryTab, setGalleryTab] = useState<'url' | 'upload' | 'preset'>('url');
 
   // Users Management state
   const [users, setUsers] = useState<UserItem[]>([]);
@@ -406,6 +413,74 @@ export default function WordPressAdminPage() {
     }
   };
 
+  // Manejadores para el Carrusel Multi-foto
+  const handleAddGalleryUrl = () => {
+    const trimmed = newGalleryUrl.trim();
+    if (!trimmed) return;
+    if (galleryImages.includes(trimmed)) {
+      setFeedback({ text: 'Esa imagen ya está en el carrusel.', type: 'error' });
+      return;
+    }
+    setGalleryImages((prev) => [...prev, trimmed]);
+    setNewGalleryUrl('');
+  };
+
+  const handleUploadGalleryFiles = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setIsUploadingGallery(true);
+    setFeedback(null);
+
+    try {
+      const newUrls: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const optimized = await compressImageFile(file);
+        const formData = new FormData();
+        formData.append('file', optimized);
+
+        const res = await fetch('/api/admin/upload', {
+          method: 'POST',
+          body: formData,
+        });
+        const data = await res.json();
+        if (res.ok && data.url) {
+          newUrls.push(data.url);
+        }
+      }
+
+      if (newUrls.length > 0) {
+        setGalleryImages((prev) => [...prev, ...newUrls]);
+        setFeedback({
+          text: `¡${newUrls.length} foto(s) añadida(s) con éxito al carrusel!`,
+          type: 'success',
+        });
+      }
+    } catch (err: any) {
+      setFeedback({ text: err.message || 'Error al subir fotos al carrusel', type: 'error' });
+    } finally {
+      setIsUploadingGallery(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleRemoveGalleryImage = (index: number) => {
+    setGalleryImages((prev) => prev.filter((_, idx) => idx !== index));
+  };
+
+  const handleMoveGalleryImage = (fromIndex: number, direction: 'up' | 'down') => {
+    const toIndex = direction === 'up' ? fromIndex - 1 : fromIndex + 1;
+    if (toIndex < 0 || toIndex >= galleryImages.length) return;
+    setGalleryImages((prev) => {
+      const copy = [...prev];
+      const temp = copy[fromIndex];
+      copy[fromIndex] = copy[toIndex];
+      copy[toIndex] = temp;
+      return copy;
+    });
+  };
+
   const handleCreateCategory = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCategoryName.trim()) return;
@@ -452,6 +527,8 @@ export default function WordPressAdminPage() {
     setCategory(categories[0]?.name || 'LVBP');
     setAuthor(currentUser ? currentUser.name : 'Redacción El Designado');
     setImageUrl('/CARRUSEL/Navegantes del Magallanes.jpg');
+    setGalleryImages([]);
+    setNewGalleryUrl('');
     setExternalLink('');
     setIsFeatured(true);
     setPostStatus('published');
@@ -470,6 +547,8 @@ export default function WordPressAdminPage() {
     setCategory(item.category);
     setAuthor(item.author);
     setImageUrl(item.image_url);
+    setGalleryImages(Array.isArray(item.gallery_images) ? item.gallery_images : []);
+    setNewGalleryUrl('');
     setExternalLink(item.external_link || '');
     setIsFeatured(item.is_featured);
     setPostStatus(item.status);
@@ -511,6 +590,7 @@ export default function WordPressAdminPage() {
         category,
         author: author || currentUser?.name || 'Redacción El Designado',
         image_url: imageUrl,
+        gallery_images: galleryImages,
         external_link: externalLink || null,
         is_featured: isFeatured,
         status: targetStatus,
@@ -1669,6 +1749,213 @@ export default function WordPressAdminPage() {
                             >
                               Quitar foto
                             </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Box: Carrusel de Fotos Adicionales (Galería Multi-foto) */}
+                  <div className="bg-surface-container-low border border-surface-container-highest p-6 rounded-3xl shadow-xl space-y-4">
+                    <div className="flex items-center justify-between pb-3 border-b border-surface-container-highest">
+                      <div className="flex items-center gap-2">
+                        <span className="material-symbols-outlined text-primary text-[20px]">photo_library</span>
+                        <div>
+                          <h3 className="font-headline-sm text-base text-primary font-bold">
+                            Carrusel de Fotos
+                          </h3>
+                          <span className="text-[10px] text-outline">Fotos adicionales / galería</span>
+                        </div>
+                      </div>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary font-bold border border-primary/20">
+                        {galleryImages.length} {galleryImages.length === 1 ? 'adicional' : 'adicionales'}
+                      </span>
+                    </div>
+
+                    <p className="text-[11px] text-secondary leading-snug">
+                      Al añadir fotos aquí, la cabecera del artículo se transformará automáticamente en un <strong className="text-on-surface">carrusel deslizable interactivo</strong> con selector de miniaturas y visor HD.
+                    </p>
+
+                    {/* Lista de diapositivas en el carrusel */}
+                    {galleryImages.length > 0 && (
+                      <div className="space-y-2">
+                        <span className="text-[10px] font-label-caps uppercase text-outline font-bold block">
+                          Diapositivas ({galleryImages.length + 1} fotos con la portada):
+                        </span>
+                        <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                          {/* Diapositiva 1: Foto principal */}
+                          <div className="flex items-center gap-2 p-2 rounded-xl bg-surface-container border border-primary/30 text-xs">
+                            <div className="w-12 h-9 rounded-lg overflow-hidden bg-black/30 shrink-0 border border-primary/40 relative">
+                              <img src={imageUrl} alt="Portada" className="w-full h-full object-cover" />
+                              <span className="absolute bottom-0 right-0 bg-primary text-on-primary text-[8px] font-bold px-1 rounded-tl">1</span>
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <span className="text-[11px] font-bold text-primary block truncate">Foto 1 (Portada Principal)</span>
+                              <span className="text-[9px] text-outline truncate block">{imageUrl}</span>
+                            </div>
+                          </div>
+
+                          {/* Diapositivas adicionales */}
+                          {galleryImages.map((img, idx) => (
+                            <div
+                              key={idx}
+                              className="flex items-center gap-2 p-2 rounded-xl bg-surface-container border border-surface-container-highest text-xs group hover:border-primary/40 transition-colors"
+                            >
+                              <div className="w-12 h-9 rounded-lg overflow-hidden bg-black/30 shrink-0 border border-surface-container-highest relative">
+                                <img src={img} alt={`Slide ${idx + 2}`} className="w-full h-full object-cover" />
+                                <span className="absolute bottom-0 right-0 bg-black/70 text-white text-[8px] font-bold px-1 rounded-tl">{idx + 2}</span>
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <span className="text-[11px] font-bold text-on-surface block truncate">Foto {idx + 2}</span>
+                                <span className="text-[9px] text-outline truncate block">{img}</span>
+                              </div>
+                              <div className="flex items-center gap-1 shrink-0">
+                                {idx > 0 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleMoveGalleryImage(idx, 'up')}
+                                    className="p-1 hover:text-primary rounded text-secondary"
+                                    title="Subir posición"
+                                  >
+                                    <span className="material-symbols-outlined text-[16px]">arrow_upward</span>
+                                  </button>
+                                )}
+                                {idx < galleryImages.length - 1 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleMoveGalleryImage(idx, 'down')}
+                                    className="p-1 hover:text-primary rounded text-secondary"
+                                    title="Bajar posición"
+                                  >
+                                    <span className="material-symbols-outlined text-[16px]">arrow_downward</span>
+                                  </button>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={() => handleRemoveGalleryImage(idx)}
+                                  className="p-1 text-error hover:bg-error/10 rounded"
+                                  title="Quitar esta foto"
+                                >
+                                  <span className="material-symbols-outlined text-[16px]">delete</span>
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Controles para añadir nueva foto */}
+                    <div className="pt-2 border-t border-surface-container-highest space-y-3">
+                      <div className="grid grid-cols-3 gap-1 p-1 bg-surface-container rounded-xl border border-surface-container-highest text-[10px] font-label-caps uppercase">
+                        <button
+                          type="button"
+                          onClick={() => setGalleryTab('url')}
+                          className={`py-1.5 px-1 rounded-lg text-center font-bold transition-all flex items-center justify-center gap-1 ${
+                            galleryTab === 'url' ? 'bg-primary text-on-primary shadow-sm' : 'text-secondary hover:text-on-surface'
+                          }`}
+                        >
+                          <span className="material-symbols-outlined text-[13px]">link</span>
+                          <span>Enlace</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setGalleryTab('upload')}
+                          className={`py-1.5 px-1 rounded-lg text-center font-bold transition-all flex items-center justify-center gap-1 ${
+                            galleryTab === 'upload' ? 'bg-primary text-on-primary shadow-sm' : 'text-secondary hover:text-on-surface'
+                          }`}
+                        >
+                          <span className="material-symbols-outlined text-[13px]">upload_file</span>
+                          <span>Subir PC</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setGalleryTab('preset')}
+                          className={`py-1.5 px-1 rounded-lg text-center font-bold transition-all flex items-center justify-center gap-1 ${
+                            galleryTab === 'preset' ? 'bg-primary text-on-primary shadow-sm' : 'text-secondary hover:text-on-surface'
+                          }`}
+                        >
+                          <span className="material-symbols-outlined text-[13px]">sports_baseball</span>
+                          <span>Equipos</span>
+                        </button>
+                      </div>
+
+                      {/* Tab 1: Enlace Web */}
+                      {galleryTab === 'url' && (
+                        <div className="space-y-2">
+                          <div className="flex gap-1.5">
+                            <input
+                              type="text"
+                              value={newGalleryUrl}
+                              onChange={(e) => setNewGalleryUrl(e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault();
+                                  handleAddGalleryUrl();
+                                }
+                              }}
+                              placeholder="https://... (URL de la foto)"
+                              className="flex-1 p-2 bg-surface-container border border-surface-container-highest rounded-xl text-on-surface text-xs outline-none focus:border-primary"
+                            />
+                            <button
+                              type="button"
+                              onClick={handleAddGalleryUrl}
+                              disabled={!newGalleryUrl.trim()}
+                              className="px-3 py-2 bg-primary text-on-primary rounded-xl text-xs font-bold disabled:opacity-40 hover:opacity-90 flex items-center gap-1"
+                            >
+                              <span className="material-symbols-outlined text-[16px]">add</span>
+                              <span>Añadir</span>
+                            </button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Tab 2: Subir fotos desde la PC */}
+                      {galleryTab === 'upload' && (
+                        <div>
+                          <label className="w-full flex flex-col items-center justify-center gap-1.5 p-3.5 bg-surface-container hover:bg-surface-container-highest border border-dashed border-primary/50 rounded-xl cursor-pointer transition-colors text-primary font-label-caps uppercase text-xs font-bold text-center">
+                            <span className="material-symbols-outlined text-[20px]">
+                              {isUploadingGallery ? 'sync' : 'add_photo_alternate'}
+                            </span>
+                            <span>
+                              {isUploadingGallery ? 'Optimizando y subiendo...' : '+ Seleccionar fotos de mi PC'}
+                            </span>
+                            <span className="text-[9px] text-outline normal-case font-normal">
+                              JPG, PNG, WEBP (puedes elegir varias a la vez)
+                            </span>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              multiple
+                              onChange={handleUploadGalleryFiles}
+                              disabled={isUploadingGallery}
+                              className="hidden"
+                            />
+                          </label>
+                        </div>
+                      )}
+
+                      {/* Tab 3: Presets de Equipos */}
+                      {galleryTab === 'preset' && (
+                        <div className="space-y-1.5">
+                          <span className="text-[9px] text-outline font-label-caps uppercase block font-bold">
+                            Toca para agregar foto de equipo:
+                          </span>
+                          <div className="flex flex-wrap gap-1.5">
+                            {predefinedImages.map((img) => (
+                              <button
+                                key={img.url}
+                                type="button"
+                                onClick={() => {
+                                  if (!galleryImages.includes(img.url)) {
+                                    setGalleryImages((prev) => [...prev, img.url]);
+                                  }
+                                }}
+                                className="px-2 py-1 text-[10px] rounded-lg border bg-surface-container text-secondary border-surface-container-highest hover:text-primary hover:border-primary/40 transition-colors"
+                              >
+                                + {img.label}
+                              </button>
+                            ))}
                           </div>
                         </div>
                       )}
